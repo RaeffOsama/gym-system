@@ -1,0 +1,43 @@
+<?php
+
+require_once __DIR__ . '/../../config/database.php';
+
+// Read JSON input
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (!$input) {
+    sendJson(400, false, 'Invalid JSON input');
+}
+
+$email = isset($input['email']) ? trim($input['email']) : '';
+$password = isset($input['password']) ? $input['password'] : '';
+
+if (empty($email) || empty($password)) {
+    sendJson(400, false, 'Email and password are required');
+}
+
+$db = getDbConnection();
+
+// Find user by email
+$stmt = $db->prepare("SELECT id, name, email, role_name, password_hash FROM users WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($user = $result->fetch_assoc()) {
+    // Verify password
+    if (password_verify($password, $user['password_hash'])) {
+        // Remove password_hash from the response representation
+        unset($user['password_hash']);
+        
+        $stmt->close();
+        $db->close();
+        
+        sendJson(200, true, 'Login successful', ['user' => $user]);
+    }
+}
+
+$stmt->close();
+$db->close();
+
+sendJson(401, false, 'Invalid credentials');
