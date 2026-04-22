@@ -331,3 +331,9 @@ git add .
 git commit -m "[your message]"
 git push
 ```
+
+### Added Messages Here
+Before Working Make sure to Pull
+```bash
+git pull
+```
