@@ -5,8 +5,8 @@ require_once __DIR__ . '/../../config/database.php';
 // Read JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (!$input) {
-    sendJson(400, false, 'Invalid JSON input');
+if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
+    sendJson(400, false, 'Invalid JSON input: ' . json_last_error_msg());
 }
 
 $email = isset($input['email']) ? trim($input['email']) : '';
@@ -27,6 +27,11 @@ $result = $stmt->get_result();
 if ($user = $result->fetch_assoc()) {
     // Verify password
     if (password_verify($password, $user['password_hash'])) {
+        // Set session
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role_name'];
+        $_SESSION['user_name'] = $user['name'];
+
         // Remove password_hash from the response representation
         unset($user['password_hash']);
         
