@@ -324,3 +324,10 @@ Run this from the project root:
 php -S localhost:8000
 ```
 Accessible at: `http://localhost:8000/api/...`
+
+### Add to git
+```bash
+git add .
+git commit -m "[your message]"
+git push
+```
