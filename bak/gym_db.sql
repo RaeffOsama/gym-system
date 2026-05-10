@@ -67,17 +67,18 @@ INSERT INTO `diet_meals` (`id`, `diet_plan_id`, `meal_id`, `day_number`) VALUES
 CREATE TABLE `diet_plans` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `nutritionist_id` int(11) NOT NULL,
+  `nutritionist_id` int(11) DEFAULT NULL,
   `goal` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL
+  `description` varchar(255) DEFAULT NULL,
+  `status` enum('Pending Assign','Planning','Active') NOT NULL DEFAULT 'Pending Assign'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `diet_plans`
 --
 
-INSERT INTO `diet_plans` (`id`, `user_id`, `nutritionist_id`, `goal`, `description`) VALUES
-(6, 1, 3, 'Weight Loss', 'High protein, low carb diet');
+INSERT INTO `diet_plans` (`id`, `user_id`, `nutritionist_id`, `goal`, `description`, `status`) VALUES
+(6, 1, 3, 'Weight Loss', 'High protein, low carb diet', 'Active');
 
 -- --------------------------------------------------------
 
@@ -169,7 +170,15 @@ INSERT INTO `specialist_profiles` (`id`, `user_id`, `experience_years`, `bio`, `
 (3, 5, 5, '{\"text\":\"asdasda\"}', '[\"6klas asd\"]'),
 (4, 6, 5, '{\"text\":\"...\"}', '{\"items\":null}'),
 (5, 10, 3, '{\"text\":\"specialist in swimming events\"}', '{\"items\":null}'),
-(6, 12, 5, '{\"text\":\"gym weights\"}', '{\"items\":null}');
+(6, 12, 5, '{\"text\":\"gym weights\"}', '{\"items\":null}'),
+(7, 20, 4, '{\"text\":\"Specializes in HIIT and functional training\"}', '[\"ACSM-CPT\",\"CrossFit Level 2\"]'),
+(8, 21, 6, '{\"text\":\"Expert in strength training and Olympic lifting\"}', '[\"NSCA-CSCS\",\"USA Weightlifting L1\"]'),
+(9, 22, 3, '{\"text\":\"Certified in yoga and flexibility training\"}', '[\"RYT-200\",\"ACE Group Fitness\"]'),
+(10, 23, 5, '{\"text\":\"Specializes in cardio and endurance training\"}', '[\"ISSA-CPT\",\"Marathon Coach Certificate\"]'),
+(11, 24, 5, '{\"text\":\"Registered dietitian specializing in sports nutrition\"}', '[\"RD License\",\"Sports Nutrition Cert\"]'),
+(12, 25, 7, '{\"text\":\"Expert in weight loss and metabolic health\"}', '[\"CNS Certification\",\"RDN License\"]'),
+(13, 26, 4, '{\"text\":\"Specializes in plant-based and therapeutic nutrition\"}', '[\"CDN License\",\"Vegan Nutrition Certificate\"]'),
+(14, 27, 6, '{\"text\":\"Clinical nutritionist focused on muscle-building diets\"}', '[\"M.Sc Nutrition\",\"Sports Dietitian Cert\"]');
 
 -- --------------------------------------------------------
 
@@ -219,9 +228,10 @@ CREATE TABLE `trainer_sessions` (
 CREATE TABLE `training_plans` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `trainer_id` int(11) NOT NULL,
+  `trainer_id` int(11) DEFAULT NULL,
   `goal` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL
+  `description` varchar(255) DEFAULT NULL,
+  `status` enum('Pending Assign','Planning','Active') NOT NULL DEFAULT 'Pending Assign'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -283,7 +293,23 @@ INSERT INTO `users` (`id`, `name`, `email`, `address`, `age`, `gender`, `passwor
 (12, 'nancy', 'nancy@gym.com', NULL, NULL, NULL, '$2y$10$A1e1hHH7M7HkNoLMt9XdFeb/Cp9yiwFoE9J1ceB6P38uPMY8LxFCa', 'trainer', NULL, 0.00),
 (13, 'Lamin', 'saasd@asda.com', 'xcasd12', 25, 'male', '$2y$10$uvQUnLKIb6fpIkx8ctZN2u9.Z4gWHi.p0tkUEgCd2F4nv5l16G0gS', 'specilist', '...', 0.00),
 (14, 'Lamin', 'saasad@asda.com', 'xcasd12', 25, 'male', '$2y$10$DbxNymEP5tbbZ2b7fYHJku57mThYmxtPCNqRLQ3JHyh.spvW32RwW', 'Specialist', '...', 0.00),
-(15, 'saaed', 'saaed@outlook.com', 'alex', 25, 'male', '$2y$10$gWI66ZMaTnfh0txQO7UH8OGlVyMBDNEiBl1/XY5sc9NwCPrwp3bfG', 'admin', '...', 0.00);
+(15, 'saaed', 'saaed@outlook.com', 'alex', 25, 'male', '$2y$10$gWI66ZMaTnfh0txQO7UH8OGlVyMBDNEiBl1/XY5sc9NwCPrwp3bfG', 'admin', '...', 0.00),
+(16, 'Alex Carter',   'user1@test.com',    'Cairo',       28, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000001', 100.00),
+(17, 'Mia Torres',    'user2@test.com',    'Alexandria',  24, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000002', 200.00),
+(18, 'Omar Nasser',   'user3@test.com',    'Giza',        30, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000003', 50.00),
+(19, 'Layla Hassan',  'user4@test.com',    'Mansoura',    22, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000004', 0.00),
+(20, 'Coach Mike',    'trainer1@test.com', NULL,          32, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000001', 0.00),
+(21, 'Coach Sarah',   'trainer2@test.com', NULL,          29, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000002', 0.00),
+(22, 'Coach James',   'trainer3@test.com', NULL,          35, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000003', 0.00),
+(23, 'Coach Rania',   'trainer4@test.com', NULL,          27, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000004', 0.00),
+(24, 'Dr. Amira Saad',    'nutri1@test.com', NULL,        34, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000001', 0.00),
+(25, 'Dr. Youssef Karim', 'nutri2@test.com', NULL,        38, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000002', 0.00),
+(26, 'Dr. Nada El-Sayed', 'nutri3@test.com', NULL,        31, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000003', 0.00),
+(27, 'Dr. Khaled Omar',   'nutri4@test.com', NULL,        40, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000004', 0.00),
+(28, 'Admin One',   'admin1@test.com', NULL, NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin', NULL, 0.00),
+(29, 'Admin Two',   'admin2@test.com', NULL, NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin', NULL, 0.00),
+(30, 'Admin Three', 'admin3@test.com', NULL, NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin', NULL, 0.00),
+(31, 'Admin Four',  'admin4@test.com', NULL, NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin', NULL, 0.00);
 
 -- --------------------------------------------------------
 
@@ -468,7 +494,7 @@ ALTER TABLE `meals`
 -- AUTO_INCREMENT for table `specialist_profiles`
 --
 ALTER TABLE `specialist_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `subscription_plans`
@@ -498,7 +524,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`
@@ -534,7 +560,7 @@ ALTER TABLE `diet_meals`
 -- Constraints for table `diet_plans`
 --
 ALTER TABLE `diet_plans`
-  ADD CONSTRAINT `fk_diet_plans_nutritionist` FOREIGN KEY (`nutritionist_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_diet_plans_nutritionist` FOREIGN KEY (`nutritionist_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_diet_plans_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
@@ -560,7 +586,7 @@ ALTER TABLE `trainer_sessions`
 -- Constraints for table `training_plans`
 --
 ALTER TABLE `training_plans`
-  ADD CONSTRAINT `fk_training_plans_trainer` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_training_plans_trainer` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_training_plans_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --

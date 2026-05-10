@@ -244,7 +244,15 @@ INSERT INTO `specialist_profiles` (`id`, `user_id`, `experience_years`, `bio`, `
 (3, 5, 5, '{\"text\":\"asdasda\"}', '[\"6klas asd\"]'),
 (4, 6, 5, '{\"text\":\"...\"}', '{\"items\":null}'),
 (5, 10, 3, '{\"text\":\"specialist in swimming events\"}', '{\"items\":null}'),
-(6, 12, 5, '{\"text\":\"gym weights\"}', '{\"items\":null}');
+(6, 12, 5, '{\"text\":\"gym weights\"}', '{\"items\":null}'),
+(7,  20, 6, '{\"text\":\"Certified personal trainer specialising in strength and conditioning\"}', '[\"NASM-CPT\",\"CrossFit Level 2\"]'),
+(8,  21, 4, '{\"text\":\"Expert in HIIT and functional movement patterns\"}', '[\"ACE Personal Trainer\",\"TRX Certified\"]'),
+(9,  22, 8, '{\"text\":\"Competitive powerlifter turned coach with decade-long coaching record\"}', '[\"NSCA-CSCS\",\"IPF National Judge\"]'),
+(10, 23, 5, '{\"text\":\"Specialises in mobility training and corrective exercise\"}', '[\"FMS Level 2\",\"Yoga Alliance RYT-200\"]'),
+(11, 24, 7, '{\"text\":\"Clinical nutritionist focused on body-composition and sports performance\"}', '[\"Registered Dietitian\",\"ISSN Sport Nutritionist\"]'),
+(12, 25, 9, '{\"text\":\"Specialises in plant-based sports nutrition and gut health\"}', '[\"MSc Human Nutrition\",\"BDA Member\"]'),
+(13, 26, 5, '{\"text\":\"Experienced in weight-management and therapeutic diets\"}', '[\"Registered Dietitian\",\"Diabetes Care Certificate\"]'),
+(14, 27, 10, '{\"text\":\"Performance nutritionist working with elite athletes across multiple sports\"}', '[\"PhD Sports Science\",\"IOC Diploma in Sports Nutrition\"]');
 
 -- --------------------------------------------------------
 
@@ -359,7 +367,23 @@ INSERT INTO `users` (`id`, `name`, `email`, `address`, `age`, `gender`, `passwor
 (12, 'nancy', 'nancy@gym.com', NULL, NULL, NULL, '$2y$10$A1e1hHH7M7HkNoLMt9XdFeb/Cp9yiwFoE9J1ceB6P38uPMY8LxFCa', 'trainer', NULL, 0.00),
 (13, 'Lamin', 'saasd@asda.com', 'xcasd12', 25, 'male', '$2y$10$uvQUnLKIb6fpIkx8ctZN2u9.Z4gWHi.p0tkUEgCd2F4nv5l16G0gS', 'specilist', '...', 0.00),
 (14, 'Lamin', 'saasad@asda.com', 'xcasd12', 25, 'male', '$2y$10$DbxNymEP5tbbZ2b7fYHJku57mThYmxtPCNqRLQ3JHyh.spvW32RwW', 'Specialist', '...', 0.00),
-(15, 'saaed', 'saaed@outlook.com', 'alex', 25, 'male', '$2y$10$gWI66ZMaTnfh0txQO7UH8OGlVyMBDNEiBl1/XY5sc9NwCPrwp3bfG', 'admin', '...', 0.00);
+(15, 'saaed', 'saaed@outlook.com', 'alex', 25, 'male', '$2y$10$gWI66ZMaTnfh0txQO7UH8OGlVyMBDNEiBl1/XY5sc9NwCPrwp3bfG', 'admin', '...', 0.00),
+(16, 'Alex Carter',        'user1@test.com',    'Cairo',      28, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000001', 100.00),
+(17, 'Mia Torres',         'user2@test.com',    'Alexandria', 24, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000002', 200.00),
+(18, 'Omar Nasser',        'user3@test.com',    'Giza',       30, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000003',  50.00),
+(19, 'Layla Hassan',       'user4@test.com',    'Mansoura',   22, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'user',         '01000000004',   0.00),
+(20, 'Coach Mike',         'trainer1@test.com', NULL,         32, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000001',   0.00),
+(21, 'Coach Sarah',        'trainer2@test.com', NULL,         29, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000002',   0.00),
+(22, 'Coach James',        'trainer3@test.com', NULL,         35, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000003',   0.00),
+(23, 'Coach Rania',        'trainer4@test.com', NULL,         27, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'trainer',      '01100000004',   0.00),
+(24, 'Dr. Amira Saad',     'nutri1@test.com',   NULL,         34, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000001',   0.00),
+(25, 'Dr. Youssef Karim',  'nutri2@test.com',   NULL,         38, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000002',   0.00),
+(26, 'Dr. Nada El-Sayed',  'nutri3@test.com',   NULL,         31, 'female', '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000003',   0.00),
+(27, 'Dr. Khaled Omar',    'nutri4@test.com',   NULL,         40, 'male',   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'nutritionist', '01200000004',   0.00),
+(28, 'Admin One',          'admin1@test.com',   NULL,         NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin',        NULL,            0.00),
+(29, 'Admin Two',          'admin2@test.com',   NULL,         NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin',        NULL,            0.00),
+(30, 'Admin Three',        'admin3@test.com',   NULL,         NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin',        NULL,            0.00),
+(31, 'Admin Four',         'admin4@test.com',   NULL,         NULL, NULL,   '$2y$10$RrKtanOgnbSJlob8xkrbTumoRrDsR6Vfd5acJoX7gGVAmYoRueeL.', 'admin',        NULL,            0.00);
 
 -- --------------------------------------------------------
 
@@ -544,7 +568,7 @@ ALTER TABLE `meals`
 -- AUTO_INCREMENT for table `specialist_profiles`
 --
 ALTER TABLE `specialist_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `subscription_plans`
@@ -574,7 +598,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `user_subscriptions`

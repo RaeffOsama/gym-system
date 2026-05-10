@@ -2,9 +2,10 @@
 
 Native PHP REST API · MySQL · Session-based auth · No framework
 
-Base URL (local): `http://localhost/api/#gym/public`
+**Base URL:** `https://test.oralpharm.com`
 
-All requests and responses use JSON. Protected endpoints require a valid session (log in first).
+All requests and responses use **JSON**.  
+Protected endpoints require a valid session — log in first and keep the cookie.
 
 ---
 
@@ -19,22 +20,47 @@ All requests and responses use JSON. Protected endpoints require a valid session
 
 ---
 
-## Seed Accounts
+## Test Accounts — 4 per Role
 
-| Role | Email | Password | ID | Balance |
-|------|-------|----------|----|---------|
-| admin | admin@gym.com | 123456 | 7 | — |
-| admin | moadmin@as.com | 123456 | 9 | 50.00 |
-| trainer | ahmed@gym.com | 123456 | 4 | — |
-| nutritionist | sara@mi.com | 123456 | 10 | — |
-| user | jane@example.com | 123456 | 1 | — |
+> All passwords are **`123456`**
+
+### Users
+| ID | Name | Email | Balance |
+|----|------|-------|---------|
+| 16 | Alex Carter | user1@test.com | 100.00 |
+| 17 | Mia Torres | user2@test.com | 200.00 |
+| 18 | Omar Nasser | user3@test.com | 50.00 |
+| 19 | Layla Hassan | user4@test.com | 0.00 |
+
+### Trainers
+| ID | Name | Email |
+|----|------|-------|
+| 20 | Coach Mike | trainer1@test.com |
+| 21 | Coach Sarah | trainer2@test.com |
+| 22 | Coach James | trainer3@test.com |
+| 23 | Coach Rania | trainer4@test.com |
+
+### Nutritionists
+| ID | Name | Email |
+|----|------|-------|
+| 24 | Dr. Amira Saad | nutri1@test.com |
+| 25 | Dr. Youssef Karim | nutri2@test.com |
+| 26 | Dr. Nada El-Sayed | nutri3@test.com |
+| 27 | Dr. Khaled Omar | nutri4@test.com |
+
+### Admins
+| ID | Name | Email |
+|----|------|-------|
+| 28 | Admin One | admin1@test.com |
+| 29 | Admin Two | admin2@test.com |
+| 30 | Admin Three | admin3@test.com |
+| 31 | Admin Four | admin4@test.com |
 
 ---
 
 ## Role Flows
 
 ### Admin
-
 ```
 POST /api/auth/login
   → GET  /api/admin/dashboard
@@ -56,48 +82,41 @@ POST /api/auth/login
   → GET  /api/nutrition/plans             (see all pending diet plans)
   → POST /api/nutrition/plans/assign      (assign nutritionist → status: Planning)
 
-  # Admin can also create plans directly without subscription flow
-  → POST /api/nutrition/create            (admin shortcut: create diet plan)
+  # Direct plan creation (bypasses subscription flow)
+  → POST /api/nutrition/create
 
   # User management
   → POST /api/auth/delete-user
 ```
 
 ### Trainer
-
 ```
 POST /api/auth/login
-  → GET  /api/specialists/dashboard       (earnings, upcoming sessions)
+  → GET  /api/specialists/dashboard
   → POST /api/auth/specialist-profile     (update bio, achievements, experience_years)
 
-  # View assigned training plans (status: Planning)
-  → GET  /api/training/plans
-
-  # Build the plan (sets plan → Active)
+  # View & build assigned training plans
+  → GET  /api/training/plans              (shows plans where status = Planning)
   → GET  /api/exercises                   (browse exercise library)
-  → POST /api/training/plans/add-exercises
+  → POST /api/training/plans/add-exercises  (sets plan → Active)
 
-  # One-on-one session slots (optional, separate from subscription plans)
-  → POST /api/sessions/create             (create available time slot)
+  # Optional: one-on-one session slots
+  → POST /api/sessions/create
 ```
 
 ### Nutritionist
-
 ```
 POST /api/auth/login
-  → GET  /api/specialists/dashboard       (active clients, recent plans)
+  → GET  /api/specialists/dashboard
   → POST /api/auth/specialist-profile     (update bio, achievements, experience_years)
 
-  # View assigned diet plans (status: Planning)
-  → GET  /api/nutrition/plans
-
-  # Build the plan (sets plan → Active)
+  # View & build assigned diet plans
+  → GET  /api/nutrition/plans             (shows plans where status = Planning)
   → GET  /api/meals                       (browse meal library)
-  → POST /api/nutrition/plans/add-meals
+  → POST /api/nutrition/plans/add-meals   (sets plan → Active)
 ```
 
 ### User
-
 ```
 POST /api/auth/register
 POST /api/auth/login
@@ -109,142 +128,28 @@ POST /api/auth/login
   → GET  /api/payments/history
 
   # Browse & purchase subscription
-  → GET  /api/subscriptions               (public)
-  → POST /api/subscriptions/purchase      (goal & description recommended for plan creation)
+  → GET  /api/subscriptions
+  → POST /api/subscriptions/purchase      (auto-creates plan on purchase)
   → GET  /api/subscriptions/user          (my subscriptions + plan IDs & statuses)
 
-  # My plans (check status: Pending Assign → Planning → Active)
-  → GET  /api/training/user               (my latest training plan + exercises)
-  → GET  /api/nutrition/user              (my latest diet plan + meals)
+  # Track plan progress: Pending Assign → Planning → Active
+  → GET  /api/training/user
+  → GET  /api/nutrition/user
 
   # Equipment booking
-  → GET  /api/equipment                   (status auto-refreshes from bookings)
-  → POST /api/bookings/create             (deducts balance, sets equipment unavailable)
-  → GET  /api/bookings                    (my booking history)
-  → POST /api/bookings/cancel             (refund if before start time, releases equipment)
-  → GET  /api/bookings/use                (check if I have an active booking right now)
+  → GET  /api/equipment
+  → POST /api/bookings/create
+  → GET  /api/bookings
+  → POST /api/bookings/cancel
+  → GET  /api/bookings/use                (active booking right now / check-in)
 
   # Browse specialists
   → GET  /api/trainers
   → GET  /api/nutritionists
 
-  # Book one-on-one trainer session (separate from subscription plan)
+  # One-on-one trainer session
   → POST /api/sessions/book
 ```
-
----
-
-## Complete Endpoint Reference
-
-### Auth
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | — | Register a new user |
-| POST | `/api/auth/login` | — | Login, receives session cookie |
-| POST | `/api/auth/logout` | any | Destroy session |
-| GET | `/api/auth/profile` | any | My profile (role, balance, all fields) |
-| POST | `/api/auth/update` | any | Update name, address, phone, age, gender |
-| POST | `/api/auth/specialist-profile` | trainer / nutritionist | Update bio, achievements, experience_years |
-| POST | `/api/auth/delete-user` | admin | Delete a user account |
-
-### Payments
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/payments/deposit` | any | Add balance (dummy payment gateway) |
-| GET | `/api/payments/history` | any | Transaction history + current balance |
-
-### Subscriptions
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/subscriptions` | — | List all subscription plans |
-| POST | `/api/subscriptions/purchase` | any | Purchase plan; auto-creates diet/training plan |
-| GET | `/api/subscriptions/user` | any | My subscriptions + linked plan IDs & statuses |
-| POST | `/api/subscriptions/create` | admin | Create subscription plan |
-| POST | `/api/subscriptions/update` | admin | Update subscription plan |
-| POST | `/api/subscriptions/delete` | admin | Delete subscription plan |
-
-### Equipment
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/equipment` | — | List equipment; auto-releases expired bookings |
-| POST | `/api/equipment/create` | admin | Add equipment |
-| POST | `/api/equipment/update` | admin | Update equipment |
-| POST | `/api/equipment/delete` | admin | Delete equipment |
-
-### Exercises
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/exercises` | — | List all exercises with equipment name |
-| POST | `/api/exercises/create` | admin | Add exercise |
-| POST | `/api/exercises/update` | admin | Update exercise |
-| POST | `/api/exercises/delete` | admin | Delete exercise |
-
-### Bookings
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/bookings` | any | My booking history |
-| POST | `/api/bookings/create` | any | Book equipment (checks available, deducts balance) |
-| POST | `/api/bookings/cancel` | any | Cancel booking (refund if not started, releases equipment) |
-| GET | `/api/bookings/use` | any | Active booking right now (for check-in) |
-
-### Specialists / Trainers / Nutritionists
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/specialists` | — | All trainers + nutritionists |
-| POST | `/api/specialists/create` | admin | Create trainer or nutritionist account |
-| GET | `/api/trainers` | — | Trainers with profiles |
-| POST | `/api/trainers/update` | admin / trainer (self) | Update trainer info |
-| POST | `/api/trainers/delete` | admin | Delete trainer |
-| GET | `/api/nutritionists` | — | Nutritionists with profiles |
-| POST | `/api/nutritionists/update` | admin / nutritionist (self) | Update nutritionist info |
-| POST | `/api/nutritionists/delete` | admin | Delete nutritionist |
-| GET | `/api/specialists/dashboard` | trainer / nutritionist | Personal dashboard stats |
-
-### Trainer Sessions (One-on-One)
-
-> Separate from subscription-based training plans.
-> A trainer creates available slots; users book them directly.
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/sessions/create` | trainer | Create available time slot |
-| POST | `/api/sessions/book` | any | Book a session slot (deducts balance) |
-
-### Training Plans (Subscription Flow)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/training/plans` | admin / trainer / user | Plans filtered by role |
-| POST | `/api/training/plans/assign` | admin | Assign trainer → status: Planning |
-| POST | `/api/training/plans/add-exercises` | trainer / admin | Add exercises → status: Active |
-| GET | `/api/training/user` | any | My latest training plan + full exercise list |
-| GET | `/api/training/workout-exercises` | any | Exercises for a specific plan (`?plan_id=`) |
-
-### Diet / Nutrition Plans (Subscription Flow)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/nutrition/plans` | admin / nutritionist / user | Plans filtered by role |
-| POST | `/api/nutrition/plans/assign` | admin | Assign nutritionist → status: Planning |
-| POST | `/api/nutrition/plans/add-meals` | nutritionist / admin | Add meals → status: Active |
-| POST | `/api/nutrition/create` | admin | Direct plan creation shortcut |
-| GET | `/api/nutrition/user` | any | My latest diet plan + full meal list |
-| GET | `/api/nutrition/diet-meals` | any | Meals for a specific plan (`?plan_id=`) |
-| GET | `/api/meals` | any | Browse all meals |
-| POST | `/api/meals/create` | any (auth) | Add a meal to the library |
-
-### Admin Dashboard
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/admin/dashboard` | admin | Revenue, active subscriptions, equipment stats, busiest hours |
 
 ---
 
@@ -252,13 +157,13 @@ POST /api/auth/login
 
 ```
 User purchases subscription (diet / gym / both)
-  └─► plan created with status: Pending Assign
+  └─► status: Pending Assign   (no specialist assigned yet)
 
 Admin assigns specialist
-  └─► status: Planning
+  └─► status: Planning         (specialist can now build the plan)
 
 Specialist adds meals / exercises
-  └─► status: Active
+  └─► status: Active           (user can view their full plan)
 ```
 
 ---
@@ -266,305 +171,658 @@ Specialist adds meals / exercises
 ## Equipment Status Lifecycle
 
 ```
-Equipment created → available
-User books → unavailable
-  Booking cancelled before start → available (if no other active bookings)
-GET /api/equipment called → auto-releases any equipment whose booking end_time has passed
+Created                  → available
+User books               → unavailable
+Booking cancelled early  → available  (restored if no other future bookings remain)
+GET /api/equipment       → auto-releases any equipment whose booking end_time has passed
 ```
 
 ---
 
 ## Subscription Plan Types
 
-| ID | Name | plan_type | Creates |
-|----|------|-----------|---------|
-| 1 | Diet Plan | `diet` | diet_plan entry |
-| 2 | Gym Plan | `gym` | training_plan entry |
-| 3 | Both | `both` | diet_plan + training_plan entries |
+| ID | plan_type | Creates |
+|----|-----------|---------|
+| 1 | `diet` | diet_plan entry |
+| 2 | `gym` | training_plan entry |
+| 3 | `both` | diet_plan + training_plan entries |
 
 ---
 
-## curl Test Cases
-
-All curl commands save and send the session cookie via `-c cookie.txt -b cookie.txt`.
-
-```bash
-# --- AUTH ---
-
-# Register
-curl -s -X POST http://localhost/api/#gym/public/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","email":"john@test.com","password":"secret","phone":"01234567890","age":28,"gender":"male","address":"Cairo"}'
-
-# Login (admin)
-curl -s -c cookie.txt -X POST http://localhost/api/#gym/public/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@gym.com","password":"123456"}'
-
-# Profile
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/auth/profile
-
-# Update profile
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/auth/update \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Updated","phone":"09876543210"}'
-
-# Update specialist profile (login as trainer first)
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/auth/specialist-profile \
-  -H "Content-Type: application/json" \
-  -d '{"experience_years":5,"bio":"Certified strength coach","achievements":["NSCA-CPT","5 years experience"]}'
-
-# Logout
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/auth/logout
-
-# Delete user (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/auth/delete-user \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":2}'
-
-
-# --- PAYMENTS ---
-
-# Deposit balance
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/payments/deposit \
-  -H "Content-Type: application/json" \
-  -d '{"amount":100}'
-
-# Transaction history
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/payments/history
-
-
-# --- SUBSCRIPTIONS ---
-
-# List plans (public)
-curl -s http://localhost/api/#gym/public/api/subscriptions
-
-# My subscriptions
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/subscriptions/user
-
-# Purchase gym plan (id=2)
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/subscriptions/purchase \
-  -H "Content-Type: application/json" \
-  -d '{"plan_id":2,"goal":"Build muscle mass","description":"Focus on upper body strength"}'
-
-# Purchase diet plan (id=1)
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/subscriptions/purchase \
-  -H "Content-Type: application/json" \
-  -d '{"plan_id":1,"goal":"Lose 5kg in 2 months","description":"Low carb approach"}'
-
-# Create subscription plan (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/subscriptions/create \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Premium Both","description":"Gym + Diet combo","plan_type":"both","price":199.99}'
-
-# Update subscription plan (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/subscriptions/update \
-  -H "Content-Type: application/json" \
-  -d '{"id":1,"price":149.99}'
-
-# Delete subscription plan (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/subscriptions/delete \
-  -H "Content-Type: application/json" \
-  -d '{"id":4}'
-
-
-# --- EQUIPMENT ---
-
-# List equipment (public, auto-refreshes status)
-curl -s http://localhost/api/#gym/public/api/equipment
-
-# Create equipment (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/equipment/create \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Kettlebell Set","description":"Cast iron kettlebells 8-32kg","booking_price":3.00,"status":"available"}'
-
-# Update equipment (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/equipment/update \
-  -H "Content-Type: application/json" \
-  -d '{"id":1,"booking_price":6.00}'
-
-# Delete equipment (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/equipment/delete \
-  -H "Content-Type: application/json" \
-  -d '{"id":11}'
-
-
-# --- EXERCISES ---
-
-# List exercises (public)
-curl -s http://localhost/api/#gym/public/api/exercises
-
-# Create exercise (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/exercises/create \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Barbell Row","description":"Bent-over barbell row","muscle_name":"Back","equipment_id":2}'
-
-# Update exercise (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/exercises/update \
-  -H "Content-Type: application/json" \
-  -d '{"id":1,"muscle_name":"Cardiovascular"}'
-
-# Delete exercise (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/exercises/delete \
-  -H "Content-Type: application/json" \
-  -d '{"id":36}'
-
-
-# --- BOOKINGS ---
-
-# Book equipment (user must be logged in, equipment must be available)
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/bookings/create \
-  -H "Content-Type: application/json" \
-  -d '{"equipment_id":1,"start_time":"2026-05-12 09:00:00","end_time":"2026-05-12 10:00:00"}'
-
-# My bookings
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/bookings
-
-# Cancel booking
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/bookings/cancel \
-  -H "Content-Type: application/json" \
-  -d '{"booking_id":1}'
-
-# Active booking right now (check-in)
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/bookings/use
-
-
-# --- SPECIALISTS ---
-
-# List all specialists (public)
-curl -s http://localhost/api/#gym/public/api/specialists
-
-# List trainers (public)
-curl -s http://localhost/api/#gym/public/api/trainers
-
-# List nutritionists (public)
-curl -s http://localhost/api/#gym/public/api/nutritionists
-
-# Create specialist account (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/specialists/create \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Ali Hassan","email":"ali@gym.com","password":"123456","role_name":"trainer","experience_years":3,"bio":"Certified personal trainer","achievements":["ACE-CPT"]}'
-
-# Update trainer (admin or trainer self)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/trainers/update \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":4,"experience_years":6}'
-
-# Delete trainer (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/trainers/delete \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":4}'
-
-# Update nutritionist (admin or nutritionist self)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/nutritionists/update \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":10,"experience_years":4}'
-
-# Delete nutritionist (admin)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/nutritionists/delete \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":10}'
-
-# Specialist dashboard (login as trainer or nutritionist)
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/specialists/dashboard
-
-
-# --- TRAINER SESSIONS (one-on-one) ---
-
-# Create session slot (login as trainer)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/sessions/create \
-  -H "Content-Type: application/json" \
-  -d '{"start_time":"2026-05-13 10:00:00","end_time":"2026-05-13 11:00:00","price":50.00}'
-
-# Book session slot (login as user)
-curl -s -X POST -b cookie.txt -c cookie.txt http://localhost/api/#gym/public/api/sessions/book \
-  -H "Content-Type: application/json" \
-  -d '{"session_id":1}'
-
-
-# --- TRAINING PLANS ---
-
-# View training plans (role-filtered)
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/training/plans
-
-# Admin assigns trainer to plan
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/training/plans/assign \
-  -H "Content-Type: application/json" \
-  -d '{"training_plan_id":1,"trainer_id":4}'
-
-# Trainer adds exercises to plan (login as trainer)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/training/plans/add-exercises \
-  -H "Content-Type: application/json" \
-  -d '{
-    "training_plan_id": 1,
-    "exercises": [
-      {"exercise_id":7,"day_number":1,"sort_order":1,"sets":4,"reps":8,"rest_time":90},
-      {"exercise_id":4,"day_number":1,"sort_order":2,"sets":4,"reps":10,"rest_time":60},
-      {"exercise_id":22,"day_number":2,"sort_order":1,"sets":3,"reps":12,"rest_time":45}
-    ]
-  }'
-
-# My latest training plan
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/training/user
-
-# Exercises for a specific plan
-curl -s -b cookie.txt "http://localhost/api/#gym/public/api/training/workout-exercises?plan_id=1"
-
-
-# --- DIET / NUTRITION PLANS ---
-
-# View diet plans (role-filtered)
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/nutrition/plans
-
-# Admin assigns nutritionist to plan
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/nutrition/plans/assign \
-  -H "Content-Type: application/json" \
-  -d '{"diet_plan_id":1,"nutritionist_id":10}'
-
-# Nutritionist adds meals to plan (login as nutritionist)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/nutrition/plans/add-meals \
-  -H "Content-Type: application/json" \
-  -d '{
-    "diet_plan_id": 1,
-    "meals": [
-      {"meal_id":1,"day_number":1},
-      {"meal_id":6,"day_number":1},
-      {"meal_id":11,"day_number":1},
-      {"meal_id":2,"day_number":2},
-      {"meal_id":7,"day_number":2},
-      {"meal_id":16,"day_number":2}
-    ]
-  }'
-
-# My latest diet plan
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/nutrition/user
-
-# Meals for a specific diet plan
-curl -s -b cookie.txt "http://localhost/api/#gym/public/api/nutrition/diet-meals?plan_id=1"
-
-# Browse all meals
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/meals
-
-# Admin creates diet plan directly (shortcut, no subscription needed)
-curl -s -X POST -b cookie.txt http://localhost/api/#gym/public/api/nutrition/create \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":1,"nutritionist_id":10,"goal":"Muscle gain","description":"High protein focus","meals":[{"meal_id":1,"day_number":1}]}'
-
-
-# --- ADMIN DASHBOARD ---
-
-curl -s -b cookie.txt http://localhost/api/#gym/public/api/admin/dashboard
+## Endpoint Reference
+
+---
+
+### Auth
+
+#### `POST /api/auth/register`
+Auth: none
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "secret123",
+  "phone": "01234567890",
+  "age": 28,
+  "gender": "male",
+  "address": "Cairo, Egypt"
+}
 ```
+> `role_name` defaults to `"user"`. Do not expose role assignment to end users.
+
+---
+
+#### `POST /api/auth/login`
+Auth: none
+
+```json
+{
+  "email": "user1@test.com",
+  "password": "123456"
+}
+```
+> Sets a `PHPSESSID` session cookie. All subsequent requests must send this cookie.
+
+---
+
+#### `POST /api/auth/logout`
+Auth: any logged-in user  
+Body: none
+
+---
+
+#### `GET /api/auth/profile`
+Auth: any  
+Body: none — returns `id, name, email, address, age, gender, role_name, phone, balance`
+
+---
+
+#### `POST /api/auth/update`
+Auth: any
+
+```json
+{
+  "name": "Updated Name",
+  "phone": "09876543210",
+  "address": "New Address",
+  "age": 29,
+  "gender": "male"
+}
+```
+> All fields optional. Admin can also pass `"user_id"` to update another user's record.
+
+---
+
+#### `POST /api/auth/specialist-profile`
+Auth: trainer / nutritionist
+
+```json
+{
+  "experience_years": 5,
+  "bio": "Certified strength and conditioning coach",
+  "achievements": ["NSCA-CSCS", "5 years experience"]
+}
+```
+> Admin can pass `"user_id"` to update any specialist's profile.
+
+---
+
+#### `POST /api/auth/delete-user`
+Auth: admin
+
+```json
+{
+  "user_id": 3
+}
+```
+
+---
+
+### Payments
+
+#### `POST /api/payments/deposit`
+Auth: any
+
+```json
+{
+  "amount": 100.00
+}
+```
+> Adds balance to the logged-in user's wallet and creates a transaction record.
+
+---
+
+#### `GET /api/payments/history`
+Auth: any  
+Body: none — returns `balance` + `transactions[]`
+
+---
+
+### Subscriptions
+
+#### `GET /api/subscriptions`
+Auth: none  
+Body: none — returns all subscription plans
+
+---
+
+#### `POST /api/subscriptions/purchase`
+Auth: any
+
+```json
+{
+  "plan_id": 2,
+  "goal": "Build muscle mass",
+  "description": "Focus on upper body strength"
+}
+```
+> Deducts price from balance, records transaction, creates a `training_plan` (gym), `diet_plan` (diet), or both (both). Returns plan ID(s) with `status: "Pending Assign"`.
+
+---
+
+#### `GET /api/subscriptions/user`
+Auth: any  
+Body: none — returns user's subscriptions with linked plan IDs and statuses
+
+---
+
+#### `POST /api/subscriptions/create`
+Auth: admin
+
+```json
+{
+  "name": "Premium Both",
+  "description": "Gym + Diet combo package",
+  "plan_type": "both",
+  "price": 199.99
+}
+```
+> `plan_type` must be one of: `diet`, `gym`, `both`
+
+---
+
+#### `POST /api/subscriptions/update`
+Auth: admin
+
+```json
+{
+  "id": 1,
+  "name": "Diet Pro",
+  "description": "Updated description",
+  "plan_type": "diet",
+  "price": 149.99
+}
+```
+> Only include fields you want to change.
+
+---
+
+#### `POST /api/subscriptions/delete`
+Auth: admin
+
+```json
+{
+  "id": 4
+}
+```
+
+---
+
+### Equipment
+
+#### `GET /api/equipment`
+Auth: none  
+Body: none — auto-releases equipment with past booking end_time before returning
+
+---
+
+#### `POST /api/equipment/create`
+Auth: admin
+
+```json
+{
+  "name": "Kettlebell Set",
+  "description": "Cast iron kettlebells 8–32 kg",
+  "booking_price": 3.00,
+  "status": "available"
+}
+```
+
+---
+
+#### `POST /api/equipment/update`
+Auth: admin
+
+```json
+{
+  "id": 1,
+  "name": "Updated Name",
+  "description": "Updated description",
+  "booking_price": 6.00,
+  "status": "available"
+}
+```
+> Only include fields you want to change.
+
+---
+
+#### `POST /api/equipment/delete`
+Auth: admin
+
+```json
+{
+  "id": 11
+}
+```
+
+---
+
+### Exercises
+
+#### `GET /api/exercises`
+Auth: none  
+Body: none — returns exercises joined with equipment name
+
+---
+
+#### `POST /api/exercises/create`
+Auth: admin
+
+```json
+{
+  "name": "Barbell Row",
+  "description": "Bent-over barbell row for back development",
+  "muscle_name": "Back",
+  "equipment_id": 2
+}
+```
+> `equipment_id` is optional.
+
+---
+
+#### `POST /api/exercises/update`
+Auth: admin
+
+```json
+{
+  "id": 1,
+  "name": "Updated Name",
+  "description": "Updated description",
+  "muscle_name": "Cardiovascular",
+  "equipment_id": 5
+}
+```
+> Only include fields you want to change.
+
+---
+
+#### `POST /api/exercises/delete`
+Auth: admin
+
+```json
+{
+  "id": 36
+}
+```
+
+---
+
+### Bookings
+
+#### `GET /api/bookings`
+Auth: any  
+Body: none — returns the logged-in user's booking history
+
+---
+
+#### `POST /api/bookings/create`
+Auth: any
+
+```json
+{
+  "equipment_id": 1,
+  "start_time": "2026-05-20 09:00:00",
+  "end_time": "2026-05-20 10:00:00"
+}
+```
+> Equipment must be `available`. Deducts booking price from balance, sets equipment to `unavailable`, records transaction.
+
+---
+
+#### `POST /api/bookings/cancel`
+Auth: any
+
+```json
+{
+  "booking_id": 1
+}
+```
+> If `start_time` is in the future → full refund + transaction record. Equipment is set back to `available` if no other active bookings remain.
+
+---
+
+#### `GET /api/bookings/use`
+Auth: any  
+Body: none — returns the user's currently active booking (NOW between start_time and end_time), or 404 if none
+
+---
+
+### Specialists / Trainers / Nutritionists
+
+#### `GET /api/specialists`
+Auth: none  
+Body: none — returns all users with role `trainer` or `nutritionist` including profiles
+
+---
+
+#### `POST /api/specialists/create`
+Auth: admin
+
+```json
+{
+  "name": "Ali Hassan",
+  "email": "ali@gym.com",
+  "password": "123456",
+  "role_name": "trainer",
+  "experience_years": 3,
+  "bio": "Certified personal trainer",
+  "achievements": ["ACE-CPT", "3 years experience"]
+}
+```
+> `role_name` must be `trainer` or `nutritionist`. Creates user + specialist_profile in one transaction.
+
+---
+
+#### `GET /api/trainers`
+Auth: none  
+Body: none
+
+---
+
+#### `POST /api/trainers/update`
+Auth: admin (any trainer) or trainer (self only)
+
+```json
+{
+  "user_id": 4,
+  "name": "Ahmed Hassan",
+  "phone": "01099999999",
+  "experience_years": 6,
+  "bio": "Updated bio text",
+  "achievements": ["NSCA-CPT", "Olympic Lifting L2"]
+}
+```
+> Trainers omit `user_id` to update themselves. All fields optional.
+
+---
+
+#### `POST /api/trainers/delete`
+Auth: admin
+
+```json
+{
+  "user_id": 4
+}
+```
+
+---
+
+#### `GET /api/nutritionists`
+Auth: none  
+Body: none
+
+---
+
+#### `POST /api/nutritionists/update`
+Auth: admin (any) or nutritionist (self only)
+
+```json
+{
+  "user_id": 10,
+  "name": "Sara Ali",
+  "phone": "01088888888",
+  "experience_years": 4,
+  "bio": "Specialist in sports nutrition",
+  "achievements": ["RD License", "Sports Nutrition Cert"]
+}
+```
+
+---
+
+#### `POST /api/nutritionists/delete`
+Auth: admin
+
+```json
+{
+  "user_id": 10
+}
+```
+
+---
+
+#### `GET /api/specialists/dashboard`
+Auth: trainer or nutritionist  
+Body: none — returns role-specific stats (earnings, active clients, upcoming sessions/plans)
+
+---
+
+### Trainer Sessions (One-on-One)
+
+> These are independent of subscription plans. A trainer opens available time slots; users book them directly.
+
+#### `POST /api/sessions/create`
+Auth: trainer
+
+```json
+{
+  "start_time": "2026-05-20 10:00:00",
+  "end_time": "2026-05-20 11:00:00",
+  "price": 50.00
+}
+```
+
+---
+
+#### `POST /api/sessions/book`
+Auth: any
+
+```json
+{
+  "session_id": 1
+}
+```
+> Deducts price from balance, records transaction, marks session as `booked`.
+
+---
+
+### Training Plans
+
+#### `GET /api/training/plans`
+Auth: any (role-filtered)  
+Body: none
+
+> - **admin** → all plans  
+> - **trainer** → only plans assigned to them  
+> - **user** → only their own plans
+
+---
+
+#### `POST /api/training/plans/assign`
+Auth: admin
+
+```json
+{
+  "training_plan_id": 1,
+  "trainer_id": 20
+}
+```
+> Sets plan `status` to `Planning`.
+
+---
+
+#### `POST /api/training/plans/add-exercises`
+Auth: trainer (assigned to plan) or admin
+
+```json
+{
+  "training_plan_id": 1,
+  "exercises": [
+    {
+      "exercise_id": 7,
+      "day_number": 1,
+      "sort_order": 1,
+      "sets": 4,
+      "reps": 8,
+      "rest_time": 90
+    },
+    {
+      "exercise_id": 4,
+      "day_number": 1,
+      "sort_order": 2,
+      "sets": 4,
+      "reps": 10,
+      "rest_time": 60
+    },
+    {
+      "exercise_id": 22,
+      "day_number": 2,
+      "sort_order": 1,
+      "sets": 3,
+      "reps": 12,
+      "rest_time": 45
+    }
+  ]
+}
+```
+> Sets plan `status` to `Active`. `sort_order`, `sets`, `reps`, `rest_time` are optional (defaults: 1, 3, 10, 60).
+
+---
+
+#### `GET /api/training/user`
+Auth: any  
+Body: none — returns user's most recent training plan + full exercise list
+
+---
+
+#### `GET /api/training/workout-exercises?plan_id=1`
+Auth: any  
+Body: none — returns all exercises for a specific plan ID (query param)
+
+---
+
+### Diet / Nutrition Plans
+
+#### `GET /api/nutrition/plans`
+Auth: any (role-filtered)  
+Body: none
+
+> - **admin** → all plans  
+> - **nutritionist** → only plans assigned to them  
+> - **user** → only their own plans
+
+---
+
+#### `POST /api/nutrition/plans/assign`
+Auth: admin
+
+```json
+{
+  "diet_plan_id": 1,
+  "nutritionist_id": 24
+}
+```
+> Sets plan `status` to `Planning`.
+
+---
+
+#### `POST /api/nutrition/plans/add-meals`
+Auth: nutritionist (assigned to plan) or admin
+
+```json
+{
+  "diet_plan_id": 1,
+  "meals": [
+    { "meal_id": 1,  "day_number": 1 },
+    { "meal_id": 6,  "day_number": 1 },
+    { "meal_id": 11, "day_number": 1 },
+    { "meal_id": 2,  "day_number": 2 },
+    { "meal_id": 7,  "day_number": 2 },
+    { "meal_id": 16, "day_number": 2 }
+  ]
+}
+```
+> Sets plan `status` to `Active`.
+
+---
+
+#### `POST /api/nutrition/create`
+Auth: admin — creates a complete diet plan directly (bypasses subscription flow)
+
+```json
+{
+  "user_id": 16,
+  "nutritionist_id": 24,
+  "goal": "Muscle gain",
+  "description": "High protein focus",
+  "meals": [
+    { "meal_id": 1, "day_number": 1 },
+    { "meal_id": 6, "day_number": 1 }
+  ]
+}
+```
+> `nutritionist_id` and `meals` are optional. Status is derived from what is provided.
+
+---
+
+#### `GET /api/nutrition/user`
+Auth: any  
+Body: none — returns user's most recent diet plan + full meal list
+
+---
+
+#### `GET /api/nutrition/diet-meals?plan_id=1`
+Auth: any  
+Body: none — returns all meals for a specific plan ID (query param)
+
+---
+
+#### `GET /api/meals`
+Auth: any (logged in)  
+Body: none — returns all meals in the library
+
+---
+
+#### `POST /api/meals/create`
+Auth: any (logged in)
+
+```json
+{
+  "name": "Protein Pancakes",
+  "preparation_steps": "Mix oats, egg whites, banana. Cook on medium heat.",
+  "calories": 320,
+  "serving_size": 200,
+  "meal_type": "breakfast"
+}
+```
+> `meal_type` values: `breakfast`, `lunch`, `dinner`, `snack`
+
+---
+
+### Admin Dashboard
+
+#### `GET /api/admin/dashboard`
+Auth: admin  
+Body: none — returns revenue, active subscriptions, equipment stats, busiest hours, recent transactions
 
 ---
 
 ## Files to Note
 
-| File | Status | Note |
-|------|--------|------|
-| [routes/sessions/create_session.php](routes/sessions/create_session.php) | Active | Trainer creates one-on-one session slots — separate from subscription plans |
-| [routes/sessions/book_session.php](routes/sessions/book_session.php) | Active | User books a trainer session slot |
-| [routes/training/get_workout_exercises.php](routes/training/get_workout_exercises.php) | Active | Returns exercises for a specific `?plan_id=` — useful for plan detail view |
-| [routes/nutrition/get_diet_meals.php](routes/nutrition/get_diet_meals.php) | Active | Returns meals for a specific `?plan_id=` — useful for plan detail view |
-| [routes/specialists/create_specialist.php](routes/specialists/create_specialist.php) | Active | Unified create for trainer or nutritionist (admin only) |
-| [routes/nutrition/create_diet_plan.php](routes/nutrition/create_diet_plan.php) | Active (admin shortcut) | Bypasses subscription flow; creates plan + meals in one shot |
+| File | Note |
+|------|------|
+| [routes/sessions/create_session.php](routes/sessions/create_session.php) | Trainer creates one-on-one session slots — separate from subscription plans |
+| [routes/sessions/book_session.php](routes/sessions/book_session.php) | User books a trainer session slot |
+| [routes/training/get_workout_exercises.php](routes/training/get_workout_exercises.php) | Returns exercises for a specific `?plan_id=` — useful for plan detail view |
+| [routes/nutrition/get_diet_meals.php](routes/nutrition/get_diet_meals.php) | Returns meals for a specific `?plan_id=` — useful for plan detail view |
+| [routes/nutrition/create_diet_plan.php](routes/nutrition/create_diet_plan.php) | Admin shortcut: creates plan + meals in one shot without subscription |

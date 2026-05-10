@@ -1,6 +1,7 @@
 Options +FollowSymLinks -MultiViews
 RewriteEngine On
 
+# Route everything through the public entry point
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteRule ^(.*)$ public/index.php [QSA,L]
