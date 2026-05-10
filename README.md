@@ -22,7 +22,7 @@ Protected endpoints require a valid session — log in first and keep the cookie
 
 ## Test Accounts — 4 per Role
 
-> All passwords are **`123456`**
+> All passwords are **`123`**
 
 ### Users
 | ID | Name | Email | Balance |
@@ -219,7 +219,7 @@ Auth: none
 ```json
 {
   "email": "user1@test.com",
-  "password": "123456"
+  "password": "123"
 }
 ```
 > Sets a `PHPSESSID` session cookie. All subsequent requests must send this cookie.
@@ -523,7 +523,7 @@ Auth: admin
 {
   "name": "Ali Hassan",
   "email": "ali@gym.com",
-  "password": "123456",
+  "password": "123",
   "role_name": "trainer",
   "experience_years": 3,
   "bio": "Certified personal trainer",
