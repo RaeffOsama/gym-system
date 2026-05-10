@@ -7,11 +7,9 @@ if (!isset($_SESSION['user_id'])) {
     sendJson(401, false, 'Unauthorized: User not logged in');
 }
 
-// Optional: Check for admin role
-$loggedInUserRole = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : '';
-// if ($loggedInUserRole !== 'admin') {
-//     sendJson(403, false, 'Forbidden: Only admins can create specialist accounts');
-// }
+if ($_SESSION['user_role'] !== 'admin') {
+    sendJson(403, false, 'Forbidden: Only admins can create specialist accounts');
+}
 
 // Read JSON input
 $input = json_decode(file_get_contents('php://input'), true);

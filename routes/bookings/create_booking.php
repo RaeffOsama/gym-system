@@ -40,9 +40,9 @@ if (!$equipment) {
     sendJson(404, false, 'Equipment not found');
 }
 
-if ($equipment['status'] !== 'available' && $equipment['status'] !== 'Active') {
-    // Note: status names might vary, standardizing on 'available' or checking common ones
-    // But usually you can book if it's available.
+if ($equipment['status'] !== 'available') {
+    $stmt->close();
+    sendJson(409, false, 'Equipment is currently unavailable for booking');
 }
 
 $price = (float)$equipment['booking_price'];
@@ -86,12 +86,16 @@ try {
 
     // Create booking
     $purchaseDate = date('Y-m-d');
-    $status = 'confirmed';
+    $bookingStatus = 'confirmed';
     $stmtBooking = $db->prepare("INSERT INTO bookings (equipment_id, user_id, purchase_date, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmtBooking->bind_param("iissss", $equipmentId, $userId, $purchaseDate, $startTime, $endTime, $status);
+    $stmtBooking->bind_param("iissss", $equipmentId, $userId, $purchaseDate, $startTime, $endTime, $bookingStatus);
     $stmtBooking->execute();
-    
     $bookingId = $db->insert_id;
+
+    // Mark equipment unavailable
+    $stmtEquip = $db->prepare("UPDATE equipment SET status = 'unavailable' WHERE id = ?");
+    $stmtEquip->bind_param("i", $equipmentId);
+    $stmtEquip->execute();
 
     $db->commit();
     

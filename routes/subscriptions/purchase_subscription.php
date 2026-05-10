@@ -2,14 +2,12 @@
 
 require_once __DIR__ . '/../../config/database.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    sendJson(401, false, 'Unauthorized: User not logged in');
+    sendJson(401, false, 'Unauthorized: Please log in');
 }
 
 $userId = $_SESSION['user_id'];
 
-// Read JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['plan_id'])) {
@@ -17,6 +15,9 @@ if (!$input || !isset($input['plan_id'])) {
 }
 
 $planId = (int)$input['plan_id'];
+$goal        = isset($input['goal'])        ? trim($input['goal'])        : '';
+$description = isset($input['description']) ? trim($input['description']) : '';
+
 $db = getDbConnection();
 
 // 1. Get plan details
@@ -30,20 +31,20 @@ if (!$plan) {
     sendJson(404, false, 'Subscription plan not found');
 }
 
-$price = (float)$plan['price'];
+$price    = (float)$plan['price'];
+$planType = strtolower($plan['plan_type']); // 'diet', 'gym', 'both'
 
 // 2. Check user balance
 $stmt = $db->prepare("SELECT balance FROM users WHERE id = ?");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-$userBalance = $stmt->get_result()->fetch_row()[0];
+$userBalance = (float)$stmt->get_result()->fetch_row()[0];
 $stmt->close();
 
 if ($userBalance < $price) {
     sendJson(400, false, 'Insufficient balance. Your current balance is ' . number_format($userBalance, 2));
 }
 
-// 3. Process Payment and Subscription
 $db->begin_transaction();
 
 try {
@@ -52,29 +53,54 @@ try {
     $stmtUpdate->bind_param("di", $price, $userId);
     $stmtUpdate->execute();
 
-    // Record Transaction
+    // Record transaction
     $transactionType = "Purchase Subscription: " . $plan['name'];
     $stmtTrans = $db->prepare("INSERT INTO transactions (user_id, transaction_type, amount) VALUES (?, ?, ?)");
     $stmtTrans->bind_param("isd", $userId, $transactionType, $price);
     $stmtTrans->execute();
 
-    // Create User Subscription
+    // Create user_subscriptions record
     $startDate = date('Y-m-d');
-    $endDate = date('Y-m-d', strtotime('+1 month')); // Default to 1 month, could be smarter based on plan_type
-    $status = 'active';
-    
+    $endDate   = date('Y-m-d', strtotime('+1 month'));
+    $subStatus = 'active';
     $stmtSub = $db->prepare("INSERT INTO user_subscriptions (user_id, subscription_plan_id, purchase_date, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $status);
+    $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $subStatus);
     $stmtSub->execute();
-    
     $userSubId = $db->insert_id;
+
+    $dietPlanId     = null;
+    $trainingPlanId = null;
+    $planStatus     = 'Pending Assign';
+
+    // Auto-create plan entries
+    if ($planType === 'diet' || $planType === 'both') {
+        $stmtDiet = $db->prepare("INSERT INTO diet_plans (user_id, goal, description, status) VALUES (?, ?, ?, ?)");
+        $stmtDiet->bind_param("isss", $userId, $goal, $description, $planStatus);
+        $stmtDiet->execute();
+        $dietPlanId = $db->insert_id;
+        $stmtDiet->close();
+    }
+
+    if ($planType === 'gym' || $planType === 'both') {
+        $stmtTrain = $db->prepare("INSERT INTO training_plans (user_id, goal, description, status) VALUES (?, ?, ?, ?)");
+        $stmtTrain->bind_param("isss", $userId, $goal, $description, $planStatus);
+        $stmtTrain->execute();
+        $trainingPlanId = $db->insert_id;
+        $stmtTrain->close();
+    }
 
     $db->commit();
 
-    sendJson(201, true, 'Subscription purchased successfully!', [
+    $responseData = [
         'subscription_id' => $userSubId,
-        'new_balance' => (float)($userBalance - $price)
-    ]);
+        'new_balance'     => round($userBalance - $price, 2),
+        'plan_type'       => $planType,
+        'status'          => 'Pending Assign',
+    ];
+    if ($dietPlanId)     $responseData['diet_plan_id']     = $dietPlanId;
+    if ($trainingPlanId) $responseData['training_plan_id'] = $trainingPlanId;
+
+    sendJson(201, true, 'Subscription purchased successfully', $responseData);
 
 } catch (Exception $e) {
     $db->rollback();

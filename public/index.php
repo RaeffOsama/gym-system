@@ -56,6 +56,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/auth/delete_user.php';
 } elseif ($requestUri === '/api/subscriptions' && $method === 'GET') {
     require __DIR__ . '/../routes/subscriptions/get_subscriptions.php';
+} elseif ($requestUri === '/api/subscriptions/user' && $method === 'GET') {
+    require __DIR__ . '/../routes/subscriptions/get_user_subscriptions.php';
 } elseif ($requestUri === '/api/subscriptions/purchase' && $method === 'POST') {
     require __DIR__ . '/../routes/subscriptions/purchase_subscription.php';
 } elseif ($requestUri === '/api/subscriptions/create' && $method === 'POST') {
@@ -102,6 +104,12 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/nutrition/get_user_diet_plan.php';
 } elseif ($requestUri === '/api/nutrition/diet-meals' && $method === 'GET') {
     require __DIR__ . '/../routes/nutrition/get_diet_meals.php';
+} elseif ($requestUri === '/api/nutrition/plans' && $method === 'GET') {
+    require __DIR__ . '/../routes/nutrition/get_plans.php';
+} elseif ($requestUri === '/api/nutrition/plans/assign' && $method === 'POST') {
+    require __DIR__ . '/../routes/nutrition/assign_nutritionist.php';
+} elseif ($requestUri === '/api/nutrition/plans/add-meals' && $method === 'POST') {
+    require __DIR__ . '/../routes/nutrition/add_meals_to_plan.php';
 } elseif ($requestUri === '/api/nutritionists' && $method === 'GET') {
     require __DIR__ . '/../routes/nutritionists/get_nutritionists.php';
 } elseif ($requestUri === '/api/nutritionists/create' && $method === 'POST') {
@@ -130,6 +138,12 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/training/get_user_training_plan.php';
 } elseif ($requestUri === '/api/training/workout-exercises' && $method === 'GET') {
     require __DIR__ . '/../routes/training/get_workout_exercises.php';
+} elseif ($requestUri === '/api/training/plans' && $method === 'GET') {
+    require __DIR__ . '/../routes/training/get_plans.php';
+} elseif ($requestUri === '/api/training/plans/assign' && $method === 'POST') {
+    require __DIR__ . '/../routes/training/assign_trainer.php';
+} elseif ($requestUri === '/api/training/plans/add-exercises' && $method === 'POST') {
+    require __DIR__ . '/../routes/training/add_exercises_to_plan.php';
 } elseif ($requestUri === '/api/admin/dashboard' && $method === 'GET') {
     require __DIR__ . '/../routes/admin/dashboard.php';
 } elseif ($requestUri === '/api/specialists/dashboard' && $method === 'GET') {

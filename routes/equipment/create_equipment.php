@@ -2,6 +2,13 @@
 
 require_once __DIR__ . '/../../config/database.php';
 
+if (!isset($_SESSION['user_id'])) {
+    sendJson(401, false, 'Unauthorized: Please log in');
+}
+if ($_SESSION['user_role'] !== 'admin') {
+    sendJson(403, false, 'Forbidden: Admins only');
+}
+
 // Read JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 

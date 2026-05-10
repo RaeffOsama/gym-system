@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 30, 2026 at 08:17 PM
+-- Generation Time: Apr 22, 2026 at 11:47 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -67,18 +67,17 @@ INSERT INTO `diet_meals` (`id`, `diet_plan_id`, `meal_id`, `day_number`) VALUES
 CREATE TABLE `diet_plans` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `nutritionist_id` int(11) DEFAULT NULL,
+  `nutritionist_id` int(11) NOT NULL,
   `goal` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `status` enum('Pending Assign','Planning','Active') NOT NULL DEFAULT 'Pending Assign'
+  `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `diet_plans`
 --
 
-INSERT INTO `diet_plans` (`id`, `user_id`, `nutritionist_id`, `goal`, `description`, `status`) VALUES
-(6, 1, 3, 'Weight Loss', 'High protein, low carb diet', 'Active');
+INSERT INTO `diet_plans` (`id`, `user_id`, `nutritionist_id`, `goal`, `description`) VALUES
+(6, 1, 3, 'Weight Loss', 'High protein, low carb diet');
 
 -- --------------------------------------------------------
 
@@ -99,16 +98,7 @@ CREATE TABLE `equipment` (
 --
 
 INSERT INTO `equipment` (`id`, `name`, `description`, `booking_price`, `status`) VALUES
-(1,  'Treadmill',          'Commercial-grade cardio treadmill with incline settings',          5.00, 'available'),
-(2,  'Bench Press Station','Flat/incline/decline bench with Olympic bar and safety catches',   4.00, 'available'),
-(3,  'Squat Rack',         'Full power rack with adjustable J-hooks and pull-up bar',          5.00, 'available'),
-(4,  'Cable Machine',      'Dual-stack multi-function cable station',                          4.00, 'available'),
-(5,  'Rowing Machine',     'Concept2 Model D air-resistance rower',                            4.50, 'available'),
-(6,  'Pull-up Bar',        'Wall-mounted multi-grip pull-up and dip station',                  2.00, 'available'),
-(7,  'Dumbbell Set',       'Full rack of rubber hex dumbbells 5 kg – 50 kg',                   3.00, 'available'),
-(8,  'Leg Press Machine',  'Plate-loaded 45-degree leg press with calf-raise platform',        4.00, 'available'),
-(9,  'Battle Ropes',       'Heavy-duty 15 m nylon battle ropes anchored to the wall',          3.00, 'available'),
-(10, 'Smith Machine',      'Counterbalanced guided barbell on fixed vertical track',           5.00, 'unavailable');
+(1, 'Treadmill', 'Pro Series', 5.00, 'available');
 
 -- --------------------------------------------------------
 
@@ -129,51 +119,8 @@ CREATE TABLE `exercises` (
 --
 
 INSERT INTO `exercises` (`id`, `name`, `description`, `muscle_name`, `equipment_id`) VALUES
--- Treadmill (equip 1)
-(1,  'Steady-State Run',         'Maintain a comfortable pace for 20–40 min',                    'Legs / Cardio',     1),
-(2,  'Interval Sprint',          'Alternate 30 s sprints with 90 s recovery walks',               'Legs / Cardio',     1),
-(3,  'Incline Walk',             'Walk at 10–15 % incline to target glutes and calves',           'Glutes / Calves',   1),
--- Bench Press Station (equip 2)
-(4,  'Flat Bench Press',         'Compound chest press from a flat bench',                        'Chest',             2),
-(5,  'Incline Bench Press',      'Press on 30–45 ° incline to hit upper chest',                   'Upper Chest',       2),
-(6,  'Decline Bench Press',      'Press on a decline to target lower chest fibres',               'Lower Chest',       2),
--- Squat Rack (equip 3)
-(7,  'Back Squat',               'Barbell on traps, squat to parallel or below',                  'Quads / Glutes',    3),
-(8,  'Front Squat',              'Barbell on front delts for a quad-dominant squat',               'Quads',             3),
-(9,  'Overhead Press',           'Press barbell from shoulder height to full lockout',             'Shoulders',         3),
-(10, 'Romanian Deadlift',        'Hip-hinge movement keeping legs nearly straight',               'Hamstrings',        3),
--- Cable Machine (equip 4)
-(11, 'Cable Fly',                'Chest isolation using high-to-low cable path',                  'Chest',             4),
-(12, 'Tricep Pushdown',          'Push cable handle down to full tricep extension',               'Triceps',           4),
-(13, 'Seated Cable Row',         'Pull cable handle to abdomen with neutral grip',                'Back',              4),
-(14, 'Face Pull',                'Pull rope to face level to work rear delts and rotator cuff',   'Rear Delts',        4),
-(15, 'Cable Lateral Raise',      'Single-arm raise to shoulder height for medial delt',           'Shoulders',         4),
--- Rowing Machine (equip 5)
-(16, 'Steady Row',               'Consistent stroke rate for 20–30 min aerobic row',              'Back / Legs / Core',5),
-(17, 'Power Row Intervals',      '10 maximum-effort strokes followed by easy recovery',            'Back / Arms',       5),
--- Pull-up Bar (equip 6)
-(18, 'Pull-up',                  'Overhand-grip vertical pull until chin clears the bar',         'Back / Biceps',     6),
-(19, 'Chin-up',                  'Underhand grip for greater bicep involvement',                  'Biceps / Back',     6),
-(20, 'Hanging Leg Raise',        'Hang from bar and raise straight legs to 90 °',                 'Core / Abs',        6),
-(21, 'L-Sit Hold',               'Hold hips flexed at 90 ° while hanging for core strength',     'Core',              6),
--- Dumbbell Set (equip 7)
-(22, 'Dumbbell Curl',            'Supinated curl from full extension to peak contraction',        'Biceps',            7),
-(23, 'Lateral Raise',            'Raise dumbbells to shoulder height for width',                  'Shoulders',         7),
-(24, 'Single-Arm Dumbbell Row',  'Brace on bench and row dumbbell to hip',                        'Back',              7),
-(25, 'Goblet Squat',             'Hold dumbbell at chest and squat deep',                         'Quads / Glutes',    7),
-(26, 'Dumbbell Shoulder Press',  'Press dumbbells from ear height to lockout',                    'Shoulders',         7),
--- Leg Press Machine (equip 8)
-(27, 'Leg Press',                'Drive platform away targeting quads and glutes',                'Quads / Glutes',    8),
-(28, 'Narrow-Stance Leg Press',  'Feet close together to emphasise outer quads',                  'Quads',             8),
-(29, 'Calf Raise on Leg Press',  'Push through ball of foot at bottom of platform travel',       'Calves',            8),
--- Battle Ropes (equip 9)
-(30, 'Alternating Waves',        'Rapidly alternate arms to send continuous waves down ropes',    'Shoulders / Core',  9),
-(31, 'Rope Slams',               'Raise both ropes overhead and slam to ground explosively',      'Full Body',         9),
-(32, 'Lateral Rope Shuffle',     'Side-shuffle while maintaining rope waves for cardio',          'Legs / Core',       9),
--- Smith Machine (equip 10)
-(33, 'Smith Machine Squat',      'Guided squat with fixed bar path for form practice',            'Quads / Glutes',   10),
-(34, 'Smith Machine Bench Press','Fixed-path chest press ideal for solo training',                'Chest',            10),
-(35, 'Smith Machine Hip Thrust', 'Bar across hips, drive glutes upward from floor',               'Glutes',           10);
+(1, 'Treadmill', 'leg workout', 'Leg', 1),
+(2, 'Bench Press', 'Chest workout', 'Chest', 1);
 
 -- --------------------------------------------------------
 
@@ -195,30 +142,8 @@ CREATE TABLE `meals` (
 --
 
 INSERT INTO `meals` (`id`, `name`, `preparation_steps`, `calories`, `serving_size`, `meal_type`) VALUES
--- Breakfast
-(1,  'Oatmeal with Banana',         'Boil oats in milk for 5 min, top with sliced banana and a drizzle of honey',                          320, 250,  'Breakfast'),
-(2,  'Greek Yogurt with Honey',     'Spoon yogurt into bowl, add honey, top with mixed berries and granola',                               180, 120,  'Breakfast'),
-(3,  'Scrambled Eggs on Toast',     'Whisk 3 eggs, cook in butter over low heat; serve on 2 slices wholegrain toast',                      420, 250,  'Breakfast'),
-(4,  'Banana Protein Smoothie',     'Blend 1 banana, 1 scoop whey protein, 300 ml skimmed milk and ice until smooth',                     380, 350,  'Breakfast'),
-(5,  'Avocado & Egg Toast',         'Toast sourdough, mash half avocado on top, place a poached egg, season with chilli flakes',           360, 200,  'Breakfast'),
--- Lunch
-(6,  'Grilled Chicken Salad',       'Season chicken breast, grill 15 min; slice and serve over mixed greens with olive oil dressing',     430, 380,  'Lunch'),
-(7,  'Brown Rice & Salmon',         'Cook rice (20 min); pan-fry salmon fillet 4 min per side with lemon and dill',                       550, 420,  'Lunch'),
-(8,  'Tuna Whole-Wheat Wrap',       'Mix canned tuna with light mayo and diced celery; roll in wrap with lettuce and tomato',              460, 310,  'Lunch'),
-(9,  'Red Lentil Soup',             'Sauté onion and garlic, add lentils and broth, simmer 25 min, blend half, season with cumin',        340, 350,  'Lunch'),
-(10, 'Turkey & Quinoa Bowl',        'Cook quinoa 15 min; sauté ground turkey with peppers; combine and top with salsa',                   510, 400,  'Lunch'),
--- Dinner
-(11, 'Grilled Sirloin & Vegetables','Season steak, grill 4 min per side to medium; steam broccoli and carrots alongside',                 620, 450,  'Dinner'),
-(12, 'Baked Chicken Breast',        'Marinate chicken in olive oil, garlic and herbs; bake at 200 °C for 25–30 min',                      400, 300,  'Dinner'),
-(13, 'Spaghetti with Tomato Sauce', 'Boil pasta al dente; simmer crushed tomatoes with garlic, basil and olive oil for 20 min',           570, 380,  'Dinner'),
-(14, 'Grilled Tilapia with Quinoa', 'Season tilapia, grill 3 min per side; serve with cooked quinoa and steamed spinach',                 460, 380,  'Dinner'),
-(15, 'Beef & Vegetable Stir-Fry',   'Slice beef thin, stir-fry 3 min with mixed veg and soy-ginger sauce; serve over jasmine rice',      530, 420,  'Dinner'),
--- Snack
-(16, 'Mixed Nuts',                  'Pre-portion 30 g of almonds, walnuts and cashews into a small container',                            190,  30,  'Snack'),
-(17, 'Protein Bar',                 'No preparation needed — consume directly from wrapper',                                              220,  60,  'Snack'),
-(18, 'Cottage Cheese & Fruit',      'Spoon cottage cheese into bowl, top with diced pineapple or berries',                                160, 170,  'Snack'),
-(19, 'Rice Cakes with Peanut Butter','Spread 1 tbsp natural peanut butter evenly on 2 plain rice cakes',                                  200,  80,  'Snack'),
-(20, 'Apple & Almond Butter',       'Core and slice apple; serve with 1 tbsp almond butter for dipping',                                  180, 170,  'Snack');
+(1, 'Oatmeal', 'Boil oats in milk', 300, 200, 'Breakfast'),
+(2, 'Greek Yogurt with Honey', 'Add honey and fruits to yogurt', 180, 120, 'Breakfast');
 
 -- --------------------------------------------------------
 
@@ -294,10 +219,9 @@ CREATE TABLE `trainer_sessions` (
 CREATE TABLE `training_plans` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `trainer_id` int(11) DEFAULT NULL,
+  `trainer_id` int(11) NOT NULL,
   `goal` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `status` enum('Pending Assign','Planning','Active') NOT NULL DEFAULT 'Pending Assign'
+  `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -526,19 +450,19 @@ ALTER TABLE `diet_plans`
 -- AUTO_INCREMENT for table `equipment`
 --
 ALTER TABLE `equipment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `exercises`
 --
 ALTER TABLE `exercises`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `meals`
 --
 ALTER TABLE `meals`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `specialist_profiles`
@@ -610,7 +534,7 @@ ALTER TABLE `diet_meals`
 -- Constraints for table `diet_plans`
 --
 ALTER TABLE `diet_plans`
-  ADD CONSTRAINT `fk_diet_plans_nutritionist` FOREIGN KEY (`nutritionist_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_diet_plans_nutritionist` FOREIGN KEY (`nutritionist_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_diet_plans_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
@@ -636,7 +560,7 @@ ALTER TABLE `trainer_sessions`
 -- Constraints for table `training_plans`
 --
 ALTER TABLE `training_plans`
-  ADD CONSTRAINT `fk_training_plans_trainer` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_training_plans_trainer` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_training_plans_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --

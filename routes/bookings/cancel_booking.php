@@ -58,17 +58,27 @@ try {
 
     if ($isRefundable) {
         $refundAmount = (float)$booking['booking_price'];
-        
-        // Update user balance
+
         $stmtBalance = $db->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
         $stmtBalance->bind_param("di", $refundAmount, $userId);
         $stmtBalance->execute();
 
-        // Create transaction record for refund
         $transactionType = "Refund: Cancellation of " . $booking['equipment_name'];
         $stmtTrans = $db->prepare("INSERT INTO transactions (user_id, transaction_type, amount) VALUES (?, ?, ?)");
         $stmtTrans->bind_param("isd", $userId, $transactionType, $refundAmount);
         $stmtTrans->execute();
+    }
+
+    // Release equipment if no other future confirmed bookings remain
+    $equipmentId = (int)$booking['equipment_id'];
+    $stmtCheck = $db->prepare("SELECT COUNT(*) FROM bookings WHERE equipment_id = ? AND status = 'confirmed' AND end_time > NOW() AND id != ?");
+    $stmtCheck->bind_param("ii", $equipmentId, $bookingId);
+    $stmtCheck->execute();
+    $remaining = $stmtCheck->get_result()->fetch_row()[0];
+    if ($remaining == 0) {
+        $stmtRelease = $db->prepare("UPDATE equipment SET status = 'available' WHERE id = ?");
+        $stmtRelease->bind_param("i", $equipmentId);
+        $stmtRelease->execute();
     }
 
     $db->commit();
