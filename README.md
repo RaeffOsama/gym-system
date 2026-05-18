@@ -131,6 +131,7 @@ POST /api/auth/login
   → GET  /api/subscriptions
   → POST /api/subscriptions/purchase      (auto-creates plan on purchase)
   → GET  /api/subscriptions/user          (my subscriptions + plan IDs & statuses)
+  → POST /api/subscriptions/ai-plan       (AI-generated nutrition + workout plan from body metrics)
 
   # Track plan progress: Pending Assign → Planning → Active
   → GET  /api/training/user
@@ -366,6 +367,72 @@ Auth: admin
   "id": 4
 }
 ```
+
+---
+
+#### `POST /api/subscriptions/ai-plan`
+Auth: any logged-in user
+
+Calls the AI model (Python/FastAPI service running on port 8000) and returns a personalised nutrition + workout plan based on the user's body metrics.
+
+```json
+{
+  "goal": "Weight Loss",
+  "weight": 80,
+  "height": 175,
+  "age": 28,
+  "gender": "male",
+  "body_fat": 20.5,
+  "muscle_mass": 35.0,
+  "water_perc": 55.0
+}
+```
+
+| Field | Type | Values |
+|-------|------|--------|
+| `goal` | string | `Weight Loss` · `Weight Gain` · `Muscle Gain` |
+| `weight` | float | kg |
+| `height` | float | cm |
+| `age` | int | years |
+| `gender` | string | `male` · `female` |
+| `body_fat` | float | % |
+| `muscle_mass` | float | kg |
+| `water_perc` | float | kg |
+
+**Response `data`:**
+```json
+{
+  "calories": 2100,
+  "protein": 158,
+  "carbs": 220,
+  "fat": 65,
+  "plan": [
+    {
+      "food": "Chicken Breast",
+      "servings": 1.5,
+      "calories": 247.5,
+      "protein": 46.35,
+      "carbs": 0.0,
+      "fat": 5.4
+    }
+  ],
+  "workout_plan": {
+    "training_days_per_week": 4,
+    "cardio_minutes_per_week": 150,
+    "strength_sessions": 3,
+    "recommended_sets": 4,
+    "recommended_reps": 12
+  }
+}
+```
+
+> **Requires the AI service to be running.** Start it with:
+> ```bash
+> cd "nutrition plan model"
+> docker build -t gym-nutrition-model .
+> docker run -d -p 8000:8000 --name nutrition-api gym-nutrition-model
+> ```
+> Returns `503` if the service is not running.
 
 ---
 

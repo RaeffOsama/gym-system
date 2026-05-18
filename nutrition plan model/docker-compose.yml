@@ -1,0 +1,11 @@
+services:
+  nutrition-model:
+    build: .
+    container_name: nutrition-model
+    networks:
+      - web-network
+    restart: always
+
+networks:
+  web-network:
+    external: true
