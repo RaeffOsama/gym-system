@@ -16,7 +16,8 @@ if (!$input || !isset($input['amount']) || (float)$input['amount'] <= 0) {
     sendJson(400, false, 'Invalid amount provided');
 }
 
-$amount = (float)$input['amount'];
+$amount        = (float)$input['amount'];
+$creditedAmount = $amount * 5;
 $db = getDbConnection();
 
 // Start transaction to update balance and log transaction
@@ -25,13 +26,13 @@ $db->begin_transaction();
 try {
     // 1. Update user balance
     $stmtUpdate = $db->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-    $stmtUpdate->bind_param("di", $amount, $userId);
+    $stmtUpdate->bind_param("di", $creditedAmount, $userId);
     $stmtUpdate->execute();
 
     // 2. Record transaction
     $transactionType = "Deposit / Top-up";
     $stmtTrans = $db->prepare("INSERT INTO transactions (user_id, transaction_type, amount) VALUES (?, ?, ?)");
-    $stmtTrans->bind_param("isd", $userId, $transactionType, $amount);
+    $stmtTrans->bind_param("isd", $userId, $transactionType, $creditedAmount);
     $stmtTrans->execute();
 
     $db->commit();
@@ -43,8 +44,9 @@ try {
     $newBalance = $stmtBalance->get_result()->fetch_assoc()['balance'];
 
     sendJson(200, true, 'Payment successful. Balance updated.', [
-        'deposited_amount' => $amount,
-        'new_balance' => (float)$newBalance
+        'deposited_amount'  => $amount,
+        'credited_amount'   => $creditedAmount,
+        'new_balance'       => (float)$newBalance
     ]);
 
 } catch (Exception $e) {
