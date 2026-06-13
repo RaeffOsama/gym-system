@@ -68,6 +68,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/subscriptions/delete_subscription.php';
 } elseif ($requestUri === '/api/subscriptions/ai-plan' && $method === 'POST') {
     require __DIR__ . '/../routes/subscriptions/ai_plan.php';
+} elseif ($requestUri === '/api/subscriptions/ai-plans' && $method === 'GET') {
+    require __DIR__ . '/../routes/subscriptions/get_ai_plans.php';
 } elseif (($requestUri === '/api/equipment' || $requestUri === '/api/equipments') && $method === 'GET') {
     require __DIR__ . '/../routes/equipment/get_equipment.php';
 } elseif ($requestUri === '/api/equipment/create' && $method === 'POST') {

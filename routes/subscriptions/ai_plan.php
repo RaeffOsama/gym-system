@@ -1,12 +1,14 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../config/database.php';
 
 if (!isset($_SESSION['user_id'])) {
     sendJson(401, false, 'Unauthorized: Please log in');
 }
 
-$body = json_decode(file_get_contents('php://input'), true);
+$userId = $_SESSION['user_id'];
+$body   = json_decode(file_get_contents('php://input'), true);
 
 $required = ['goal', 'weight', 'height', 'age', 'gender', 'body_fat', 'muscle_mass', 'water_perc'];
 foreach ($required as $field) {
@@ -20,7 +22,7 @@ if (!in_array($goal, ['Weight Loss', 'Weight Gain', 'Muscle Gain'])) {
     sendJson(400, false, 'goal must be one of: Weight Loss, Weight Gain, Muscle Gain');
 }
 
-$payload = json_encode([
+$inbody = [
     'goal'        => $goal,
     'weight'      => (float) $body['weight'],
     'height'      => (float) $body['height'],
@@ -29,7 +31,9 @@ $payload = json_encode([
     'body_fat'    => (float) $body['body_fat'],
     'muscle_mass' => (float) $body['muscle_mass'],
     'water_perc'  => (float) $body['water_perc'],
-]);
+];
+
+$payload = json_encode($inbody);
 
 $ch = curl_init('https://ai.oralpharm.com/predict');
 curl_setopt_array($ch, [
@@ -54,5 +58,14 @@ $result = json_decode($response, true);
 if ($httpCode !== 200 || !$result) {
     sendJson(502, false, 'AI plan service returned an unexpected response');
 }
+
+$db           = getDbConnection();
+$inbodyJson   = json_encode($inbody);
+$aiPlanJson   = json_encode($result);
+$stmt = $db->prepare("INSERT INTO user_ai_plans (user_id, inbody, ai_plan) VALUES (?, ?, ?)");
+$stmt->bind_param("iss", $userId, $inbodyJson, $aiPlanJson);
+$stmt->execute();
+$stmt->close();
+$db->close();
 
 sendJson(200, true, 'AI plan generated', $result);
