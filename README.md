@@ -86,6 +86,7 @@ POST /api/auth/login
   → POST /api/nutrition/create
 
   # User management
+  → GET  /api/users                       (list all users)
   → POST /api/auth/delete-user
 ```
 
@@ -267,6 +268,12 @@ Auth: trainer / nutritionist
 }
 ```
 > Admin can pass `"user_id"` to update any specialist's profile.
+
+---
+
+#### `GET /api/users`
+Auth: admin  
+Body: none — returns all users with `id, name, email, role_name, phone, age, gender, address, balance`
 
 ---
 
