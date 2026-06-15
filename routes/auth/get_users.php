@@ -13,11 +13,9 @@ if ($_SESSION['user_role'] !== 'admin') {
 
 $db = getDbConnection();
 
-// Added WHERE role_name = 'user' to filter out trainers, admins, etc.
 $stmt = $db->prepare("
     SELECT id, name, email, role_name, phone, age, gender, address, balance
     FROM users
-    WHERE role_name = 'user' 
     ORDER BY id ASC
 ");
 $stmt->execute();
@@ -25,4 +23,4 @@ $users = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $db->close();
 
-sendJson(200, true, 'Users retrieved', $users); 
+sendJson(200, true, 'Users retrieved', $users);
