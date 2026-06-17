@@ -16,6 +16,7 @@ $db = getDbConnection();
 $stmt = $db->prepare("
     SELECT id, name, email, role_name, phone, age, gender, address, balance
     FROM users
+    WHERE role_name = 'user'
     ORDER BY id ASC
 ");
 $stmt->execute();
