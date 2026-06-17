@@ -56,6 +56,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/auth/delete_user.php';
 } elseif ($requestUri === '/api/users' && $method === 'GET') {
     require __DIR__ . '/../routes/auth/get_users.php';
+} elseif ($requestUri === '/api/users/detail' && $method === 'GET') {
+    require __DIR__ . '/../routes/auth/get_user.php';
 } elseif ($requestUri === '/api/subscriptions' && $method === 'GET') {
     require __DIR__ . '/../routes/subscriptions/get_subscriptions.php';
 } elseif ($requestUri === '/api/subscriptions/user' && $method === 'GET') {

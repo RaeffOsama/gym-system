@@ -87,6 +87,7 @@ POST /api/auth/login
 
   # User management
   → GET  /api/users                       (list all users)
+  → GET  /api/users/detail?user_id=1      (single user profile fields)
   → POST /api/auth/delete-user
 ```
 
@@ -274,6 +275,27 @@ Auth: trainer / nutritionist
 #### `GET /api/users`
 Auth: admin  
 Body: none — returns all users with `id, name, email, role_name, phone, age, gender, address, balance`
+
+---
+
+#### `GET /api/users/detail?user_id=1`
+Auth: admin  
+Query: `user_id` (required) — returns a single user (`role_name = user`) with `id, name, phone, address, age, gender`
+
+```json
+{
+  "success": true,
+  "message": "User retrieved successfully",
+  "user": {
+    "id": 33,
+    "name": "John Doe",
+    "phone": "555-1234",
+    "address": "123 Main St",
+    "age": 25,
+    "gender": "male"
+  }
+}
+```
 
 ---
 
