@@ -104,6 +104,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/trainers/create_trainer.php';
 } elseif ($requestUri === '/api/trainers/update' && $method === 'POST') {
     require __DIR__ . '/../routes/trainers/update_trainer.php';
+} elseif ($requestUri === '/api/trainers/book' && $method === 'POST') {
+    require __DIR__ . '/../routes/trainers/book_trainer.php';
 } elseif ($requestUri === '/api/trainers/delete' && $method === 'POST') {
     require __DIR__ . '/../routes/trainers/delete_trainer.php';
 } elseif ($requestUri === '/api/nutrition/create' && $method === 'POST') {
@@ -124,6 +126,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/nutritionists/create_nutritionist.php';
 } elseif ($requestUri === '/api/nutritionists/update' && $method === 'POST') {
     require __DIR__ . '/../routes/nutritionists/update_nutritionist.php';
+} elseif ($requestUri === '/api/nutritionists/book' && $method === 'POST') {
+    require __DIR__ . '/../routes/nutritionists/book_nutritionist.php';
 } elseif ($requestUri === '/api/nutritionists/delete' && $method === 'POST') {
     require __DIR__ . '/../routes/nutritionists/delete_nutritionist.php';
 } elseif ($requestUri === '/api/meals' && $method === 'GET') {

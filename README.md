@@ -150,6 +150,8 @@ POST /api/auth/login
   # Browse specialists
   → GET  /api/trainers
   → GET  /api/nutritionists
+  → POST /api/trainers/book              (pick trainer — 10.00 balance, auto-subscribe gym plan)
+  → POST /api/nutritionists/book       (pick nutritionist — 10.00 balance, auto-subscribe diet plan)
 
   # One-on-one trainer session
   → POST /api/sessions/book
@@ -160,10 +162,14 @@ POST /api/auth/login
 ## Plan Status Lifecycle
 
 ```
-User purchases subscription (diet / gym / both)
+Option A — User picks specialist directly (POST /api/trainers/book or /api/nutritionists/book)
+  └─► Charges 10.00 balance, creates subscription + plan with specialist assigned
+  └─► status: Planning         (specialist can build immediately)
+
+Option B — User purchases subscription (diet / gym / both)
   └─► status: Pending Assign   (no specialist assigned yet)
 
-Admin assigns specialist
+Admin assigns specialist (Option B only)
   └─► status: Planning         (specialist can now build the plan)
 
 Specialist adds meals / exercises
@@ -712,6 +718,21 @@ Auth: admin
 
 ---
 
+#### `POST /api/trainers/book`
+Auth: any logged-in user  
+Charges a fixed **10.00** from balance, creates a gym `user_subscriptions` record, and a `training_plans` row with the chosen trainer assigned (`status: Planning`). Specialist sees the client immediately in `GET /api/training/plans`.
+
+```json
+{
+  "trainer_id": 20,
+  "goal": "Muscle gain",
+  "description": "Focus on compound lifts"
+}
+```
+> `goal` and `description` are optional. Returns 409 if the user already has a training plan in `Pending Assign`, `Planning`, or `Active`.
+
+---
+
 #### `GET /api/nutritionists`
 Auth: none  
 Body: none
@@ -742,6 +763,21 @@ Auth: admin
   "user_id": 10
 }
 ```
+
+---
+
+#### `POST /api/nutritionists/book`
+Auth: any logged-in user  
+Charges a fixed **10.00** from balance, creates a diet `user_subscriptions` record, and a `diet_plans` row with the chosen nutritionist assigned (`status: Planning`). Specialist sees the client immediately in `GET /api/nutrition/plans`.
+
+```json
+{
+  "nutritionist_id": 24,
+  "goal": "Weight loss",
+  "description": "Low carb preference"
+}
+```
+> `goal` and `description` are optional. Returns 409 if the user already has a diet plan in `Pending Assign`, `Planning`, or `Active`.
 
 ---
 
