@@ -729,7 +729,7 @@ Charges a fixed **10.00** from balance, creates a gym `user_subscriptions` recor
   "description": "Focus on compound lifts"
 }
 ```
-> `goal` and `description` are optional. Returns 409 if the user already has a training plan in `Pending Assign`, `Planning`, or `Active`.
+> `goal` and `description` are optional. Gym and diet plans are independent — you can hold both at once. Returns 409 only if you already have a training plan in `Planning` or `Active`.
 
 ---
 
@@ -777,7 +777,7 @@ Charges a fixed **10.00** from balance, creates a diet `user_subscriptions` reco
   "description": "Low carb preference"
 }
 ```
-> `goal` and `description` are optional. Returns 409 if the user already has a diet plan in `Pending Assign`, `Planning`, or `Active`.
+> `goal` and `description` are optional. Gym and diet plans are independent — you can hold both at once. Returns 409 only if you already have a diet plan in `Planning` or `Active`.
 
 ---
 

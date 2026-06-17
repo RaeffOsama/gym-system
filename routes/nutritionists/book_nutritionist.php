@@ -41,18 +41,38 @@ if (!$nutritionist || $nutritionist['role_name'] !== 'nutritionist') {
     sendJson(404, false, 'Nutritionist not found');
 }
 
+// Block only if diet plan is already being built or active (gym plan is separate)
 $stmt = $db->prepare("
-    SELECT id FROM diet_plans
-    WHERE user_id = ? AND status IN ('Pending Assign', 'Planning', 'Active')
+    SELECT id, status, nutritionist_id
+    FROM diet_plans
+    WHERE user_id = ? AND status IN ('Planning', 'Active')
+    ORDER BY id DESC
     LIMIT 1
 ");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-if ($stmt->get_result()->num_rows > 0) {
-    $stmt->close();
+$activePlan = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if ($activePlan) {
     $db->close();
-    sendJson(409, false, 'You already have an active or in-progress diet plan');
+    sendJson(409, false, 'You already have an active or in-progress diet plan', [
+        'existing_diet_plan_id' => (int)$activePlan['id'],
+        'status'                => $activePlan['status'],
+        'nutritionist_id'       => $activePlan['nutritionist_id'] ? (int)$activePlan['nutritionist_id'] : null,
+    ]);
 }
+
+$stmt = $db->prepare("
+    SELECT id, nutritionist_id
+    FROM diet_plans
+    WHERE user_id = ? AND status = 'Pending Assign'
+    ORDER BY id DESC
+    LIMIT 1
+");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$pendingPlan = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 $stmt = $db->prepare("SELECT id FROM subscription_plans WHERE plan_type = 'diet' ORDER BY id ASC LIMIT 1");
@@ -93,21 +113,50 @@ try {
     $stmtTrans->execute();
     $stmtTrans->close();
 
-    $startDate = date('Y-m-d');
-    $endDate   = date('Y-m-d', strtotime('+1 month'));
-    $subStatus = 'active';
-    $stmtSub = $db->prepare("INSERT INTO user_subscriptions (user_id, subscription_plan_id, purchase_date, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $subStatus);
-    $stmtSub->execute();
-    $userSubId = $db->insert_id;
-    $stmtSub->close();
+    $userSubId = null;
+    $stmtSubCheck = $db->prepare("
+        SELECT us.id FROM user_subscriptions us
+        JOIN subscription_plans sp ON sp.id = us.subscription_plan_id
+        WHERE us.user_id = ? AND sp.plan_type = 'diet' AND us.status = 'active' AND us.end_date >= CURDATE()
+        LIMIT 1
+    ");
+    $stmtSubCheck->bind_param("i", $userId);
+    $stmtSubCheck->execute();
+    $existingSub = $stmtSubCheck->get_result()->fetch_assoc();
+    $stmtSubCheck->close();
+
+    if (!$existingSub) {
+        $startDate = date('Y-m-d');
+        $endDate   = date('Y-m-d', strtotime('+1 month'));
+        $subStatus = 'active';
+        $stmtSub = $db->prepare("INSERT INTO user_subscriptions (user_id, subscription_plan_id, purchase_date, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $subStatus);
+        $stmtSub->execute();
+        $userSubId = $db->insert_id;
+        $stmtSub->close();
+    } else {
+        $userSubId = (int)$existingSub['id'];
+    }
 
     $planStatus = 'Planning';
-    $stmtDiet = $db->prepare("INSERT INTO diet_plans (user_id, nutritionist_id, goal, description, status) VALUES (?, ?, ?, ?, ?)");
-    $stmtDiet->bind_param("iisss", $userId, $nutritionistId, $goal, $description, $planStatus);
-    $stmtDiet->execute();
-    $dietPlanId = $db->insert_id;
-    $stmtDiet->close();
+
+    if ($pendingPlan) {
+        $dietPlanId = (int)$pendingPlan['id'];
+        $stmtDiet = $db->prepare("
+            UPDATE diet_plans
+            SET nutritionist_id = ?, goal = ?, description = ?, status = ?
+            WHERE id = ? AND user_id = ?
+        ");
+        $stmtDiet->bind_param("isssii", $nutritionistId, $goal, $description, $planStatus, $dietPlanId, $userId);
+        $stmtDiet->execute();
+        $stmtDiet->close();
+    } else {
+        $stmtDiet = $db->prepare("INSERT INTO diet_plans (user_id, nutritionist_id, goal, description, status) VALUES (?, ?, ?, ?, ?)");
+        $stmtDiet->bind_param("iisss", $userId, $nutritionistId, $goal, $description, $planStatus);
+        $stmtDiet->execute();
+        $dietPlanId = $db->insert_id;
+        $stmtDiet->close();
+    }
 
     $db->commit();
 

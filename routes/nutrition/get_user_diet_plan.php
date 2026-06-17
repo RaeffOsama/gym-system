@@ -19,7 +19,7 @@ $queryPlan = "
         dp.goal, 
         dp.description 
     FROM diet_plans dp
-    JOIN users u ON dp.nutritionist_id = u.id
+    LEFT JOIN users u ON dp.nutritionist_id = u.id
     WHERE dp.user_id = ?
     ORDER BY dp.id DESC
     LIMIT 1

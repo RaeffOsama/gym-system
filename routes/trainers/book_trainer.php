@@ -41,18 +41,38 @@ if (!$trainer || $trainer['role_name'] !== 'trainer') {
     sendJson(404, false, 'Trainer not found');
 }
 
+// Block only if gym plan is already being built or active (diet plan is separate)
 $stmt = $db->prepare("
-    SELECT id FROM training_plans
-    WHERE user_id = ? AND status IN ('Pending Assign', 'Planning', 'Active')
+    SELECT id, status, trainer_id
+    FROM training_plans
+    WHERE user_id = ? AND status IN ('Planning', 'Active')
+    ORDER BY id DESC
     LIMIT 1
 ");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
-if ($stmt->get_result()->num_rows > 0) {
-    $stmt->close();
+$activePlan = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if ($activePlan) {
     $db->close();
-    sendJson(409, false, 'You already have an active or in-progress training plan');
+    sendJson(409, false, 'You already have an active or in-progress training plan', [
+        'existing_training_plan_id' => (int)$activePlan['id'],
+        'status'                    => $activePlan['status'],
+        'trainer_id'                => $activePlan['trainer_id'] ? (int)$activePlan['trainer_id'] : null,
+    ]);
 }
+
+$stmt = $db->prepare("
+    SELECT id, trainer_id
+    FROM training_plans
+    WHERE user_id = ? AND status = 'Pending Assign'
+    ORDER BY id DESC
+    LIMIT 1
+");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$pendingPlan = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 $stmt = $db->prepare("SELECT id FROM subscription_plans WHERE plan_type = 'gym' ORDER BY id ASC LIMIT 1");
@@ -93,21 +113,50 @@ try {
     $stmtTrans->execute();
     $stmtTrans->close();
 
-    $startDate = date('Y-m-d');
-    $endDate   = date('Y-m-d', strtotime('+1 month'));
-    $subStatus = 'active';
-    $stmtSub = $db->prepare("INSERT INTO user_subscriptions (user_id, subscription_plan_id, purchase_date, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $subStatus);
-    $stmtSub->execute();
-    $userSubId = $db->insert_id;
-    $stmtSub->close();
+    $userSubId = null;
+    $stmtSubCheck = $db->prepare("
+        SELECT us.id FROM user_subscriptions us
+        JOIN subscription_plans sp ON sp.id = us.subscription_plan_id
+        WHERE us.user_id = ? AND sp.plan_type = 'gym' AND us.status = 'active' AND us.end_date >= CURDATE()
+        LIMIT 1
+    ");
+    $stmtSubCheck->bind_param("i", $userId);
+    $stmtSubCheck->execute();
+    $existingSub = $stmtSubCheck->get_result()->fetch_assoc();
+    $stmtSubCheck->close();
+
+    if (!$existingSub) {
+        $startDate = date('Y-m-d');
+        $endDate   = date('Y-m-d', strtotime('+1 month'));
+        $subStatus = 'active';
+        $stmtSub = $db->prepare("INSERT INTO user_subscriptions (user_id, subscription_plan_id, purchase_date, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmtSub->bind_param("iissss", $userId, $planId, $startDate, $startDate, $endDate, $subStatus);
+        $stmtSub->execute();
+        $userSubId = $db->insert_id;
+        $stmtSub->close();
+    } else {
+        $userSubId = (int)$existingSub['id'];
+    }
 
     $planStatus = 'Planning';
-    $stmtTrain = $db->prepare("INSERT INTO training_plans (user_id, trainer_id, goal, description, status) VALUES (?, ?, ?, ?, ?)");
-    $stmtTrain->bind_param("iisss", $userId, $trainerId, $goal, $description, $planStatus);
-    $stmtTrain->execute();
-    $trainingPlanId = $db->insert_id;
-    $stmtTrain->close();
+
+    if ($pendingPlan) {
+        $trainingPlanId = (int)$pendingPlan['id'];
+        $stmtTrain = $db->prepare("
+            UPDATE training_plans
+            SET trainer_id = ?, goal = ?, description = ?, status = ?
+            WHERE id = ? AND user_id = ?
+        ");
+        $stmtTrain->bind_param("isssii", $trainerId, $goal, $description, $planStatus, $trainingPlanId, $userId);
+        $stmtTrain->execute();
+        $stmtTrain->close();
+    } else {
+        $stmtTrain = $db->prepare("INSERT INTO training_plans (user_id, trainer_id, goal, description, status) VALUES (?, ?, ?, ?, ?)");
+        $stmtTrain->bind_param("iisss", $userId, $trainerId, $goal, $description, $planStatus);
+        $stmtTrain->execute();
+        $trainingPlanId = $db->insert_id;
+        $stmtTrain->close();
+    }
 
     $db->commit();
 

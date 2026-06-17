@@ -19,7 +19,7 @@ $queryPlan = "
         tp.goal, 
         tp.description 
     FROM training_plans tp
-    JOIN users u ON tp.trainer_id = u.id
+    LEFT JOIN users u ON tp.trainer_id = u.id
     WHERE tp.user_id = ?
     ORDER BY tp.id DESC
     LIMIT 1
