@@ -21,7 +21,7 @@ $db = getDbConnection();
 $stmt = $db->prepare("
     SELECT id, name, phone, address, age, gender
     FROM users
-    WHERE id = ? AND role_name = 'user'
+    WHERE id = ?
 ");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
