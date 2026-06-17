@@ -40,10 +40,6 @@ if (!$booking) {
     sendJson(404, false, 'Booking not found or access denied');
 }
 
-if ($booking['status'] === 'cancelled') {
-    sendJson(400, false, 'Booking is already cancelled');
-}
-
 // Check if booking can be cancelled (e.g., if it hasn't started yet)
 $now = date('Y-m-d H:i:s');
 $isRefundable = ($booking['start_time'] > $now);
@@ -51,40 +47,54 @@ $isRefundable = ($booking['start_time'] > $now);
 $db->begin_transaction();
 
 try {
-    // Update booking status
-    $stmtUpdate = $db->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?");
-    $stmtUpdate->bind_param("i", $bookingId);
-    $stmtUpdate->execute();
-
     if ($isRefundable) {
         $refundAmount = (float)$booking['booking_price'];
 
         $stmtBalance = $db->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
         $stmtBalance->bind_param("di", $refundAmount, $userId);
         $stmtBalance->execute();
+        $stmtBalance->close();
 
         $transactionType = "Refund: Cancellation of " . $booking['equipment_name'];
         $stmtTrans = $db->prepare("INSERT INTO transactions (user_id, transaction_type, amount) VALUES (?, ?, ?)");
         $stmtTrans->bind_param("isd", $userId, $transactionType, $refundAmount);
         $stmtTrans->execute();
+        $stmtTrans->close();
     }
 
-    // Release equipment if no other future confirmed bookings remain
-    $equipmentId = (int)$booking['equipment_id'];
-    $stmtCheck = $db->prepare("SELECT COUNT(*) FROM bookings WHERE equipment_id = ? AND status = 'confirmed' AND end_time > NOW() AND id != ?");
-    $stmtCheck->bind_param("ii", $equipmentId, $bookingId);
-    $stmtCheck->execute();
-    $remaining = $stmtCheck->get_result()->fetch_row()[0];
-    if ($remaining == 0) {
-        $stmtRelease = $db->prepare("UPDATE equipment SET status = 'available' WHERE id = ?");
-        $stmtRelease->bind_param("i", $equipmentId);
-        $stmtRelease->execute();
+    $stmtDelete = $db->prepare("DELETE FROM bookings WHERE id = ? AND user_id = ?");
+    $stmtDelete->bind_param("ii", $bookingId, $userId);
+    $stmtDelete->execute();
+    if ($stmtDelete->affected_rows === 0) {
+        throw new Exception('Booking could not be deleted');
     }
+    $stmtDelete->close();
+
+    // Release equipment when no other active confirmed bookings remain (same rule as GET /api/equipment)
+    $equipmentId = (int)$booking['equipment_id'];
+    $stmtRelease = $db->prepare("
+        UPDATE equipment e
+        SET e.status = 'available'
+        WHERE e.id = ?
+          AND NOT EXISTS (
+            SELECT 1 FROM bookings b
+            WHERE b.equipment_id = e.id
+              AND b.status = 'confirmed'
+              AND b.end_time > NOW()
+          )
+    ");
+    $stmtRelease->bind_param("i", $equipmentId);
+    $stmtRelease->execute();
+    $equipmentReleased = $stmtRelease->affected_rows > 0;
+    $stmtRelease->close();
 
     $db->commit();
-    
+
     $message = $isRefundable ? 'Booking cancelled and amount refunded' : 'Booking cancelled (no refund as session already started or passed)';
-    sendJson(200, true, $message);
+    sendJson(200, true, $message, [
+        'equipment_id' => $equipmentId,
+        'equipment_status' => $equipmentReleased ? 'available' : 'unavailable',
+    ]);
 
 } catch (Exception $e) {
     $db->rollback();
