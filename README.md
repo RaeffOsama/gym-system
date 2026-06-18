@@ -152,6 +152,8 @@ POST /api/auth/login
   → GET  /api/nutritionists
   → POST /api/trainers/book              (pick trainer — 10.00 balance, auto-subscribe gym plan)
   → POST /api/nutritionists/book       (pick nutritionist — 10.00 balance, auto-subscribe diet plan)
+  → POST /api/training/plans/cancel    (cancel trainer / delete workout plan)
+  → POST /api/nutrition/plans/cancel   (cancel nutritionist / delete diet plan)
 
   # One-on-one trainer session
   → POST /api/sessions/book
@@ -879,6 +881,18 @@ Auth: trainer (assigned to plan) or admin
 
 ---
 
+#### `POST /api/training/plans/cancel`
+Auth: plan owner (user) or admin
+
+```json
+{
+  "training_plan_id": 12
+}
+```
+> Deletes the training plan (and its workout exercises). Cancels the user's active gym `user_subscriptions` record. Refunds **10.00** if plan status is `Pending Assign` or `Planning`; no refund if `Active`.
+
+---
+
 #### `GET /api/training/user`
 Auth: any  
 Body: none — returns user's most recent training plan + full exercise list
@@ -933,6 +947,18 @@ Auth: nutritionist (assigned to plan) or admin
 }
 ```
 > Sets plan `status` to `Active`.
+
+---
+
+#### `POST /api/nutrition/plans/cancel`
+Auth: plan owner (user) or admin
+
+```json
+{
+  "diet_plan_id": 6
+}
+```
+> Deletes the diet plan (and its diet meals). Cancels the user's active diet `user_subscriptions` record. Refunds **10.00** if plan status is `Pending Assign` or `Planning`; no refund if `Active`.
 
 ---
 

@@ -120,6 +120,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/nutrition/assign_nutritionist.php';
 } elseif ($requestUri === '/api/nutrition/plans/add-meals' && $method === 'POST') {
     require __DIR__ . '/../routes/nutrition/add_meals_to_plan.php';
+} elseif ($requestUri === '/api/nutrition/plans/cancel' && $method === 'POST') {
+    require __DIR__ . '/../routes/nutrition/cancel_plan.php';
 } elseif ($requestUri === '/api/nutritionists' && $method === 'GET') {
     require __DIR__ . '/../routes/nutritionists/get_nutritionists.php';
 } elseif ($requestUri === '/api/nutritionists/create' && $method === 'POST') {
@@ -156,6 +158,8 @@ if ($requestUri === '/api/auth/register' && $method === 'POST') {
     require __DIR__ . '/../routes/training/assign_trainer.php';
 } elseif ($requestUri === '/api/training/plans/add-exercises' && $method === 'POST') {
     require __DIR__ . '/../routes/training/add_exercises_to_plan.php';
+} elseif ($requestUri === '/api/training/plans/cancel' && $method === 'POST') {
+    require __DIR__ . '/../routes/training/cancel_plan.php';
 } elseif ($requestUri === '/api/admin/dashboard' && $method === 'GET') {
     require __DIR__ . '/../routes/admin/dashboard.php';
 } elseif ($requestUri === '/api/specialists/dashboard' && $method === 'GET') {
